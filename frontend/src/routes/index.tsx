@@ -2,5 +2,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  component: () => <div>Hello</div>,
+  component: () => <div>홈 페이지</div>,
 })
