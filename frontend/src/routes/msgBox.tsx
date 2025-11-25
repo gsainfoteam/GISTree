@@ -12,7 +12,8 @@ function RouteComponent() {
         '건강하고 맛있는 것도 많이 먹',
         '고 즐겁고 따뜻한 연말 보내.',
         '시간 되면 같이 밥이라도 먹...'
-      ]
+      ],
+      sender: '익명'
     },
     {
       recipient: '수연',
@@ -22,7 +23,8 @@ function RouteComponent() {
         '건강하고 맛있는 것도 많이 먹',
         '고 즐겁고 따뜻한 연말 보내.',
         '시간 되면 같이 밥이라도 먹...'
-      ]
+      ],
+      sender: '익명'
     },
     {
       recipient: '수연',
@@ -32,7 +34,8 @@ function RouteComponent() {
         '건강하고 맛있는 것도 많이 먹',
         '고 즐겁고 따뜻한 연말 보내.',
         '시간 되면 같이 밥이라도 먹...'
-      ]
+      ],
+      sender: '익명'
     },
     {
       recipient: '수연',
@@ -42,7 +45,8 @@ function RouteComponent() {
         '건강하고 맛있는 것도 많이 먹',
         '고 즐겁고 따뜻한 연말 보내.',
         '시간 되면 같이 밥이라도 먹...'
-      ]
+      ],
+      sender: '익명'
     },
     {
       recipient: '수연',
@@ -52,7 +56,8 @@ function RouteComponent() {
         '건강하고 맛있는 것도 많이 먹',
         '고 즐겁고 따뜻한 연말 보내.',
         '시간 되면 같이 밥이라도 먹...'
-      ]
+      ],
+      sender: '익명'
     },
     {
       recipient: '수연',
@@ -62,7 +67,8 @@ function RouteComponent() {
         '건강하고 맛있는 것도 많이 먹',
         '고 즐겁고 따뜻한 연말 보내.',
         '시간 되면 같이 밥이라도 먹...'
-      ]
+      ],
+      sender: '익명'
     }
   ];
 
@@ -100,6 +106,7 @@ function RouteComponent() {
               key={index}
               recipient={message.recipient}
               content={message.content}
+              sender={message.sender}
             />
           ))}
         </div>
