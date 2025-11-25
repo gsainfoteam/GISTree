@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
+import './index.css'
 
 // routeTree 자동 생성 파일 import
 import { routeTree } from './routeTree.gen' 
