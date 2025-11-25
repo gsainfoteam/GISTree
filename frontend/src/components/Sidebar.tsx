@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router'
+
 export default function Sidebar() {
   // 임시 사용자 데이터 (나중에 실제 데이터로 교체)
   const userName = "채수연";
@@ -20,7 +22,10 @@ export default function Sidebar() {
       </div>
       
       {/* 쪽지함 버튼 - 어두운 갈색/앰버 */}
-      <button className="w-full bg-amber-800 hover:bg-amber-900 text-white font-medium py-3.5 px-4 rounded-lg mb-4 flex items-center justify-center gap-2.5 transition-colors shadow-sm">
+      <Link 
+        to="/msgBox"
+        className="w-full bg-amber-800 hover:bg-amber-900 text-white font-medium py-3.5 px-4 rounded-lg mb-4 flex items-center justify-center gap-2.5 transition-colors shadow-sm"
+      >
         {/* 봉투/쪽지 아이콘 */}
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
@@ -37,10 +42,13 @@ export default function Sidebar() {
           />
         </svg>
         <span>쪽지함</span>
-      </button>
+      </Link>
       
       {/* 하단 친구집 방문하기 버튼 */}
-      <div className="mt-auto w-full pb-4">
+      <Link
+        to="/findUser"
+        className="mt-auto w-full pb-4"
+      >
         <button className="w-full bg-orange-200 hover:bg-orange-300 text-gray-800 font-medium py-3.5 px-4 rounded-lg flex items-center justify-center gap-2.5 transition-colors shadow-sm">
           {/* 집 아이콘 */}
           <svg 
@@ -59,7 +67,7 @@ export default function Sidebar() {
           </svg>
           <span>친구집 방문하기</span>
         </button>
-      </div>
+      </Link>
     </div>
   );
 }

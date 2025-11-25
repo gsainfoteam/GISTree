@@ -9,13 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PostMsgRouteImport } from './routes/postMsg'
 import { Route as MsgBoxRouteImport } from './routes/msgBox'
+import { Route as FindUserRouteImport } from './routes/findUser'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
+const PostMsgRoute = PostMsgRouteImport.update({
+  id: '/postMsg',
+  path: '/postMsg',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MsgBoxRoute = MsgBoxRouteImport.update({
   id: '/msgBox',
   path: '/msgBox',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FindUserRoute = FindUserRouteImport.update({
+  id: '/findUser',
+  path: '/findUser',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -32,40 +44,62 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/findUser': typeof FindUserRoute
   '/msgBox': typeof MsgBoxRoute
+  '/postMsg': typeof PostMsgRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/findUser': typeof FindUserRoute
   '/msgBox': typeof MsgBoxRoute
+  '/postMsg': typeof PostMsgRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/findUser': typeof FindUserRoute
   '/msgBox': typeof MsgBoxRoute
+  '/postMsg': typeof PostMsgRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/msgBox'
+  fullPaths: '/' | '/about' | '/findUser' | '/msgBox' | '/postMsg'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/msgBox'
-  id: '__root__' | '/' | '/about' | '/msgBox'
+  to: '/' | '/about' | '/findUser' | '/msgBox' | '/postMsg'
+  id: '__root__' | '/' | '/about' | '/findUser' | '/msgBox' | '/postMsg'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  FindUserRoute: typeof FindUserRoute
   MsgBoxRoute: typeof MsgBoxRoute
+  PostMsgRoute: typeof PostMsgRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/postMsg': {
+      id: '/postMsg'
+      path: '/postMsg'
+      fullPath: '/postMsg'
+      preLoaderRoute: typeof PostMsgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/msgBox': {
       id: '/msgBox'
       path: '/msgBox'
       fullPath: '/msgBox'
       preLoaderRoute: typeof MsgBoxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/findUser': {
+      id: '/findUser'
+      path: '/findUser'
+      fullPath: '/findUser'
+      preLoaderRoute: typeof FindUserRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -88,7 +122,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  FindUserRoute: FindUserRoute,
   MsgBoxRoute: MsgBoxRoute,
+  PostMsgRoute: PostMsgRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
