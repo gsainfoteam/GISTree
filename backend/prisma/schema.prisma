@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  studentId     String   @unique // 학번
+  avatar        String?  // 프로필 아바타 (후순위)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  ornaments        UserOrnament[]
+  tree             UserTree?
+  mailboxSettings  MailboxSettings?
+  notifications    Notification[]
+  
+  @@index([studentId])
+  @@index([name])
+  @@map("users")
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  content     String
+  isAnonymous Boolean  @default(false)
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  senderId    String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  
+  receiverId  String
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  replyToId   String?
+  replyTo     Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies     Message[] @relation("MessageReplies")
+  
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model Ornament {
+  id          String   @id @default(uuid())
+  name        String
+  imageUrl    String
+  description String?
+  rarity      String   @default("common") // common, rare, epic, legendary
+  
+  userOrnaments UserOrnament[]
+  
+  @@map("ornaments")
+}
+
+model UserOrnament {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  ornamentId  String
+  ornament    Ornament @relation(fields: [ornamentId], references: [id], onDelete: Cascade)
+  
+  messageId   String?  // 이 오너먼트를 얻게 된 쪽지 ID
+  receivedAt  DateTime @default(now())
+  
+  @@unique([userId, ornamentId])
+  @@index([userId])
+  @@map("user_ornaments")
+}
+
+model UserTree {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  decorations    Json     // 트리 꾸미기 데이터 (오너먼트 위치, 스타일 등)
+  isLocked       Boolean  @default(false)
+  password       String?  // 하우스 화면 잠금 비밀번호 (해시)
+  updatedAt      DateTime @updatedAt
+  
+  @@map("user_trees")
+}
+
+model MailboxSettings {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  password    String?  // 우편함 비밀번호 (해시)
+  isProtected Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+  
+  @@map("mailbox_settings")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      String   // 'new_message', 'reply', 'ornament_received' 등
+  title     String
+  content   String
+  link      String?  // 알림 클릭 시 이동할 링크
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}

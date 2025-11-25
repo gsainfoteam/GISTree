@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gistree-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: gistree
+      POSTGRES_PASSWORD: gistree_password
+      POSTGRES_DB: gistree_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - gistree-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U gistree" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: gistree-backend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     # 환경 변수는 .env 파일이나 직접 지정
+  #     DATABASE_URL: postgresql://gistree:gistree_password@postgres:5432/gistree_db?schema=public
+  #     NODE_ENV: production
+  #     PORT: 3000
+  #     JWT_SECRET: ${JWT_SECRET}
+  #     IDP_ISSUER_URL: ${IDP_ISSUER_URL}
+  #     IDP_CLIENT_ID: ${IDP_CLIENT_ID}
+  #     IDP_CLIENT_SECRET: ${IDP_CLIENT_SECRET}
+  #     IDP_CALLBACK_URL: ${IDP_CALLBACK_URL}
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     - gistree-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  gistree-network:
+    driver: bridge
