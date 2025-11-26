@@ -22,7 +22,8 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@libs/*": ["libs/*"]
+      "@libs/infoteam-idp": ["libs/infoteam-idp/src"],
+      "@libs/infoteam-idp/*": ["libs/infoteam-idp/src/*"]
     }
   }
 }
