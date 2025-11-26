@@ -3,6 +3,10 @@
 
 generator client {
   provider = "prisma-client-js"
+  // [추가] 실행 환경에 맞는 바이너리 타겟 명시
+  // native: 현재 개발 중인 컴퓨터 (Windows/Mac 등)
+  // linux-musl-openssl-3.0.x: Docker (Alpine Linux) 환경
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
