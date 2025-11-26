@@ -51,6 +51,7 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
+# [수정된 실행 명령어]
 # 1. ls -R dist: 디버깅을 위해 빌드된 파일 목록을 로그에 출력
 # 2. prisma db push: 초기 개발 단계이므로 마이그레이션 파일 없이 DB 스키마 동기화
 # 3. (node dist/main || node dist/src/main): 파일 위치가 바뀌었을 경우를 대비해 두 경로 모두 시도
