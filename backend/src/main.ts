@@ -1,10 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(cookieParser());
 
   // Global validation pipe
   app.useGlobalPipes(
@@ -46,9 +49,9 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`
-🎄 GIST 연말 쪽지 서비스 시작!
+🎄 GISTree 서비스 시작:)
 🚀 서버 실행 중: http://localhost:${port}
-📚 API 문서: http://localhost:${port}/api
+📚 API 명세서: http://localhost:${port}/api
   `);
 }
 bootstrap();

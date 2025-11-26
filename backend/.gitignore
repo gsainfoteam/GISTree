@@ -20,8 +20,8 @@ build/
 .nest/
 
 # Prisma
-# Keep migrations but ignore generated files
-prisma/migrations/**/*.sql
+# Migration files must be committed per Prisma best practices
+# Only ignore the Prisma Client generated files (handled by node_modules)
 
 # Testing
 coverage/
