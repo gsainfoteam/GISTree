@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Res, Req } from '@nestjs/common';
+import { Controller, Get, Query, Res, Req, BadRequestException, UnauthorizedException, InternalServerErrorException, HttpException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { InfoteamIdpService } from '@libs/infoteam-idp';
@@ -94,14 +94,14 @@ export class AuthController {
     status: 500,
     description: '로그인 처리 중 서버 오류'
   })
-  async callback(@Query('code') code: string, @Req() req: Request, @Res() res: Response) {
+  async callback(@Query('code') code: string, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     if (!code) {
-      return res.status(400).send('Authorization code is missing');
+      throw new BadRequestException('Authorization code is missing');
     }
 
     const codeVerifier = req.cookies['code_verifier'];
     if (!codeVerifier) {
-      return res.status(400).json({ message: 'Login session expired or invalid. Please try again.' });
+      throw new BadRequestException('Login session expired or invalid. Please try again.');
     }
 
     // Clear the cookie
@@ -145,7 +145,7 @@ export class AuthController {
       const jwt = await this.authService.login(user);
 
       // 5. Return JWT
-      return res.json({
+      return {
         message: 'Login successful',
         user: {
           id: user.id,
@@ -154,17 +154,21 @@ export class AuthController {
           studentId: user.studentId,
         },
         access_token: jwt.access_token,
-      });
+      };
     } catch (error) {
       // Handle specific error types
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
       if (error.name === 'UnauthorizedException' || error.response?.status === 401) {
-        return res.status(401).json({
+        throw new UnauthorizedException({
           message: 'GIST 학생이 아니거나 인증에 실패했습니다',
           error: error.message
         });
       }
 
-      return res.status(500).json({
+      throw new InternalServerErrorException({
         message: 'Login failed',
         error: error.message
       });

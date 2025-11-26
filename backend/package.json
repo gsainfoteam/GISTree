@@ -84,6 +84,9 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@libs/infoteam-idp(|/.*)$": "<rootDir>/../libs/infoteam-idp/src/$1"
+    }
   }
 }
