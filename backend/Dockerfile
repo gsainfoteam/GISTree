@@ -3,6 +3,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# [추가] Prisma 실행을 위한 OpenSSL 설치
+RUN apk add --no-cache openssl
+
 # Copy package files
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -23,6 +26,9 @@ RUN npm run build
 FROM node:20-alpine
 
 WORKDIR /app
+
+# [추가] 실행 환경에서도 OpenSSL 필요
+RUN apk add --no-cache openssl
 
 # Install production dependencies
 COPY package*.json ./
