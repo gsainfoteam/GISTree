@@ -62,12 +62,6 @@ export class AuthController {
     const state = Buffer.from(statePath).toString('base64');
     authUrl.searchParams.set('state', state);
 
-    console.log('--- IDP Login Debug ---');
-    console.log('Client ID:', clientId);
-    console.log('Redirect URI:', redirectUri);
-    console.log('Generated Auth URL:', authUrl.toString());
-    console.log('-----------------------');
-
     import { Controller, Get, Post, Query, Res, Req } from '@nestjs/common';
     import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
     import { AuthService } from './auth.service';
