@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, ValidateIf, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateMailboxDto {
@@ -7,7 +7,8 @@ export class UpdateMailboxDto {
   isProtected: boolean;
 
   @ApiProperty({ description: '우편함 비밀번호 (보호 시 필수)', required: false })
+  @ValidateIf((o) => o.isProtected === true)
+  @IsNotEmpty({ message: '우편함 보호 시 비밀번호는 필수입니다' })
   @IsString()
-  @IsOptional()
   password?: string;
 }

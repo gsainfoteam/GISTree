@@ -79,7 +79,11 @@ function InboxPage() {
               </div>
               <p className="text-gray-700 whitespace-pre-wrap">{message.content}</p>
               <div className="mt-4 flex justify-end">
-                <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                <button
+                  onClick={() => alert(`Reply to message ${message.id} (Not implemented yet)`)}
+                  aria-label={`Reply to message from ${message.isAnonymous ? 'Anonymous' : message.sender.name}`}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
                   Reply
                 </button>
               </div>

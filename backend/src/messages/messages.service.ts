@@ -26,6 +26,22 @@ export class MessagesService {
       throw new NotFoundException('Receiver not found or name does not match.');
     }
 
+    // Validate replyToId if present
+    if (dto.replyToId) {
+      const originalMessage = await this.prisma.message.findUnique({
+        where: { id: dto.replyToId },
+      });
+
+      if (!originalMessage) {
+        throw new NotFoundException('Original message not found');
+      }
+
+      // Check if sender is a participant (sender or receiver) of the original message
+      if (originalMessage.senderId !== senderId && originalMessage.receiverId !== senderId) {
+        throw new UnauthorizedException('You cannot reply to a message you are not a participant of');
+      }
+    }
+
     // Use transaction to ensure atomicity
     return await this.prisma.$transaction(async (tx) => {
       // Create message
