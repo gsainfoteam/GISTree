@@ -20,7 +20,7 @@ function AuthCallback() {
 
     // Redirect to the next page
     const target = redirect_url?.startsWith('/') ? redirect_url : '/'
-    navigate({ to: target })
+    window.location.href = target
   }, [navigate, redirect_url, access_token])
 
   return <div>Logging in...</div>
