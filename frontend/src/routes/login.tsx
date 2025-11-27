@@ -9,7 +9,11 @@ import { getApiUrl } from '../config';
 function LoginPage() {
   const handleLogin = () => {
     const apiUrl = getApiUrl();
-    window.location.href = `${apiUrl}/auth/login`;
+    const redirectUrl = encodeURIComponent(
+      `${window.location.pathname}${window.location.search}${window.location.hash}` || '/',
+    );
+
+    window.location.href = `${apiUrl}/auth/login?redirect_url=${redirectUrl}`;
   };
 
   return (

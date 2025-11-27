@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Res, Req, BadRequestException, UnauthorizedException, InternalServerErrorException, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Query, Res, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { InfoteamIdpService } from '@libs/infoteam-idp';
