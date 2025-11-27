@@ -19,17 +19,13 @@ function SendMessagePage() {
     setErrorMessage('')
 
     try {
-      const token = localStorage.getItem('accessToken') // Assuming token is stored here
-      if (!token) {
-        throw new Error('Not authenticated')
-      }
-
-      const response = await fetch('http://localhost:3000/messages', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include', // Send cookies
         body: JSON.stringify({
           receiverStudentId: studentId,
           receiverName: name,

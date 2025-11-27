@@ -9,17 +9,9 @@ function AuthCallback() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search)
-    const token = searchParams.get('token')
-
-    if (token) {
-      localStorage.setItem('accessToken', token)
-      // Redirect to send-message or home
-      navigate({ to: '/send-message' })
-    } else {
-      // Handle error or missing token
-      navigate({ to: '/' })
-    }
+    // Cookie is set by the server (HttpOnly)
+    // Just redirect to the next page
+    navigate({ to: '/send-message' })
   }, [navigate])
 
   return <div>Logging in...</div>

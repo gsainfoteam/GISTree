@@ -120,8 +120,15 @@ export class AuthController {
       // 4. Generate JWT
       const jwt = await this.authService.login(user);
 
-      // 5. Redirect to Frontend with Token
-      return res.redirect(`${frontendUrl}/auth/callback?token=${jwt.access_token}`);
+      // 5. Set HttpOnly Cookie and Redirect
+      res.cookie('access_token', jwt.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax', // or 'strict' depending on requirements
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      });
+
+      return res.redirect(`${frontendUrl}/auth/callback`);
 
     } catch (error) {
       console.error('Login failed:', error);

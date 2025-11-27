@@ -34,11 +34,13 @@ services:
       # 1. 로컬 개발(.env)에선 localhost를 쓰지만, Docker 내부에선 서비스 이름인 'postgres'를 호스트로 써야 합니다.
       # 2. 따라서 DATABASE_URL을 여기서 직접 조합해서 주입합니다.
       DATABASE_URL: postgresql://${POSTGRES_USER:-gistree}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-gistree_db}?schema=public
-      
+
       NODE_ENV: production
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET}
-      
+      FRONTEND_URL: ${FRONTEND_URL}
+      BACKEND_URL: ${BACKEND_URL}
+
       IDP_URL: ${IDP_ISSUER_URL}
       # IDP 관련 설정 (필요 시 .env에 값 추가)
       IDP_ISSUER_URL: ${IDP_ISSUER_URL}

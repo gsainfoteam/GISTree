@@ -7,7 +7,8 @@ export const Route = createFileRoute('/')({
 
 function Home() {
   const handleLogin = () => {
-    window.location.href = 'http://localhost:3000/auth/login';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+    window.location.href = `${backendUrl}/auth/login`;
   };
 
   return (
