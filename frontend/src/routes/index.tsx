@@ -175,12 +175,12 @@ function HomeCanvas() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
       <canvas
         ref={canvasRef}
         width={CANVAS_SIZE}
         height={CANVAS_SIZE}
-        className="drop-shadow-2xl bg-transparent"
+        className="drop-shadow-2xl bg-transparent pointer-events-auto"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
