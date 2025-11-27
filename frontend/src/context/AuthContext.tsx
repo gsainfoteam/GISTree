@@ -21,43 +21,75 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  setUser(null);
-}
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const apiUrl = getApiUrl();
+      const token = localStorage.getItem('access_token');
+      const headers: HeadersInit = {};
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${apiUrl}/users/me`, {
+        credentials: 'include',
+        headers,
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      } else {
+        setUser(null);
+      }
     } catch (error) {
-  console.error('Auth check failed', error);
-  setUser(null);
-} finally {
-  setIsLoading(false);
-}
+      console.error('Auth check failed', error);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-const login = () => {
-  const apiUrl = getApiUrl();
-  const redirectUrl = encodeURIComponent(
-    `${window.location.pathname}${window.location.search}${window.location.hash}` || '/',
+  const login = () => {
+    const apiUrl = getApiUrl();
+    const redirectUrl = encodeURIComponent(
+      `${window.location.pathname}${window.location.search}${window.location.hash}` || '/',
+    );
+
+    window.location.href = `${apiUrl}/auth/login?redirect_url=${redirectUrl}`;
+  };
+
+  const logout = () => {
+    const apiUrl = getApiUrl();
+    const token = localStorage.getItem('access_token');
+    const headers: HeadersInit = {};
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Call backend to clear HttpOnly cookie
+    fetch(`${apiUrl}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+      headers,
+    }).finally(() => {
+      localStorage.removeItem('access_token');
+      setUser(null);
+      // Optional: Redirect to home or login
+      window.location.href = '/';
+    });
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
   );
-
-  window.location.href = `${apiUrl}/auth/login?redirect_url=${redirectUrl}`;
-};
-
-const logout = () => {
-  const apiUrl = getApiUrl();
-  // Call backend to clear HttpOnly cookie
-  fetch(`${apiUrl}/auth/logout`, {
-    method: 'POST',
-    credentials: 'include',
-  }).finally(() => {
-    setUser(null);
-    // Optional: Redirect to home or login
-    window.location.href = '/';
-  });
-};
-
-return (
-  <AuthContext.Provider value={{ user, isLoading, login, logout }}>
-    {children}
-  </AuthContext.Provider>
-);
 }
 
 export function useAuth() {
