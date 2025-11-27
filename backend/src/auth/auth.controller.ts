@@ -23,6 +23,11 @@ export class AuthController {
     summary: 'GIST IDP 로그인 시작',
     description: 'PKCE를 위한 code_verifier를 생성하고 쿠키에 저장한 후, IDP 로그인 페이지로 리다이렉트합니다.'
   })
+  @ApiQuery({
+    name: 'redirect_url',
+    description: '로그인 후 리다이렉트할 프론트엔드 URL (옵션)',
+    required: false
+  })
   @ApiResponse({ status: 302, description: 'IDP 로그인 페이지로 리다이렉트' })
   async login(@Res() res: Response, @Query('redirect_url') redirectUrl?: string) {
     console.log('Login initiated with redirect_url:', redirectUrl);
@@ -49,6 +54,8 @@ export class AuthController {
     authUrl.searchParams.set('redirect_uri', redirectUri);
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('scope', 'openid profile student_id email');
+    const nonce = crypto.randomBytes(16).toString('hex');
+    authUrl.searchParams.set('nonce', nonce);
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'plain');
 
@@ -71,6 +78,11 @@ export class AuthController {
     name: 'code',
     description: 'GIST IDP에서 발급한 Authorization Code',
     required: true
+  })
+  @ApiQuery({
+    name: 'state',
+    description: 'OAuth2 state 파라미터 (리다이렉트 URL 포함)',
+    required: false
   })
   @ApiResponse({
     status: 302,
