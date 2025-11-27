@@ -6,7 +6,7 @@ export const Route = createFileRoute('/')({
 })
 
 import { useAuth } from '../context/AuthContext'
-import { Link } from '@tanstack/react-router'
+
 
 function Home() {
   const { user, isLoading, login } = useAuth()

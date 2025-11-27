@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 interface TreeProps {
   userId: string;
@@ -6,7 +6,7 @@ interface TreeProps {
   isLocked: boolean;
 }
 
-export function Tree({ userId, decorations, isLocked }: TreeProps) {
+export function Tree({ userId, isLocked }: TreeProps) {
   return (
     <div className="relative w-full h-full flex items-center justify-center bg-blue-900 rounded-lg overflow-hidden">
       {/* Background / Snow */}
