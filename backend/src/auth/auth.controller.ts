@@ -60,11 +60,9 @@ export class AuthController {
     authUrl.searchParams.set('code_challenge_method', 'plain');
 
     const safeRedirectPath = this.getSafeRedirectPath(redirectUrl, frontendUrl);
-    if (safeRedirectPath) {
-      authUrl.searchParams.set('state', safeRedirectPath);
-    } else {
-      authUrl.searchParams.set('state', '/');
-    }
+    const statePath = safeRedirectPath || '/';
+    const state = Buffer.from(statePath).toString('base64');
+    authUrl.searchParams.set('state', state);
 
     return res.redirect(authUrl.toString());
   }
@@ -167,7 +165,16 @@ export class AuthController {
         maxAge: 24 * 60 * 60 * 1000, // 1 day
       });
 
-      const redirectPath = this.getSafeRedirectPath(state, frontendUrl) ?? '/';
+      let decodedState = '/';
+      if (state) {
+        try {
+          decodedState = Buffer.from(state, 'base64').toString('utf-8');
+        } catch (e) {
+          console.error('Failed to decode state:', e);
+        }
+      }
+
+      const redirectPath = this.getSafeRedirectPath(decodedState, frontendUrl) ?? '/';
       const frontendRedirect = `${frontendUrl}/auth/callback?redirect_url=${encodeURIComponent(redirectPath)}`;
 
       return res.redirect(frontendRedirect);
