@@ -11,8 +11,8 @@ function Home() {
 
   const handleLogin = () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-    const returnUrl = encodeURIComponent(window.location.pathname);
-    window.location.href = `${backendUrl}/auth/login?returnUrl=${returnUrl}`;
+    const redirectUrl = encodeURIComponent(window.location.pathname);
+    window.location.href = `${backendUrl}/auth/login?redirect_url=${redirectUrl}`;
   };
 
   if (isLoading) {
