@@ -51,11 +51,11 @@ async function bootstrap() {
   });
 
   const port = process.env.PORT ?? 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`
 🎄 GISTree 서비스 시작:)
-🚀 서버 실행 중: http://localhost:${port}
-📚 API 명세서: http://localhost:${port}/api
+🚀 서버 실행 중: http://0.0.0.0:${port}
+📚 API 명세서: http://0.0.0.0:${port}/api
   `);
 }
 bootstrap();

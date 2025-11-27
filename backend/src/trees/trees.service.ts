@@ -29,10 +29,38 @@ export class TreesService {
   }
 
   async updateTreeDecorations(userId: string, decorations: TreeDecorations) {
+    // 1. Validate that the user owns all ornaments being placed
+    const ornamentIds = new Set<string>();
+    for (const key in decorations) {
+      if (decorations[key].ornamentId) {
+        ornamentIds.add(decorations[key].ornamentId);
+      }
+    }
+
+    if (ornamentIds.size > 0) {
+      const userOrnaments = await this.prisma.userOrnament.findMany({
+        where: {
+          userId,
+          ornamentId: { in: Array.from(ornamentIds) },
+        },
+        select: { ornamentId: true },
+      });
+
+      const ownedOrnamentIds = new Set(userOrnaments.map((uo) => uo.ornamentId));
+      for (const id of ornamentIds) {
+        if (!ownedOrnamentIds.has(id)) {
+          // If user doesn't own the ornament, we could throw an error or just ignore it.
+          // Throwing error is safer.
+          throw new NotFoundException(`User does not own ornament with ID ${id}`);
+        }
+      }
+    }
+
+    // 2. Update the tree
     return this.prisma.userTree.upsert({
       where: { userId },
       update: {
-        decorations: decorations as any, // Prisma expects Json, so we cast to any or InputJsonValue
+        decorations: decorations as any,
       },
       create: {
         userId,
