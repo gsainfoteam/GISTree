@@ -6,7 +6,6 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { of, throwError } from 'rxjs';
 import { Response, Request } from 'express';
-import { BadRequestException, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -60,6 +59,8 @@ describe('AuthController', () => {
             getOrThrow: jest.fn((key: string) => {
               if (key === 'IDP_CLIENT_ID') return 'test-client-id';
               if (key === 'IDP_CLIENT_SECRET') return 'test-client-secret';
+              if (key === 'BACKEND_URL') return 'http://backend.test';
+              if (key === 'FRONTEND_URL') return 'http://frontend.test';
               return 'test-value';
             }),
           },
@@ -94,22 +95,34 @@ describe('AuthController', () => {
       expect(res.redirect).toHaveBeenCalledWith(expect.stringContaining('https://idp.gistory.me/authorize'));
       expect(res.redirect).toHaveBeenCalledWith(expect.stringContaining('client_id=test-client-id'));
     });
+
+    it('should include state when redirect_url is provided', async () => {
+      const res = mockResponse();
+
+      await controller.login(res, '/write?tab=inbox');
+
+      expect(res.redirect).toHaveBeenCalledWith(expect.stringContaining('state=%2Fwrite%3Ftab%3Dinbox'));
+    });
   });
 
   describe('callback', () => {
-    it('should throw BadRequestException if code is missing', async () => {
+    it('should redirect to auth failed if code is missing', async () => {
       const req = mockRequest();
       const res = mockResponse();
-      await expect(controller.callback(undefined as any, req, res)).rejects.toThrow(BadRequestException);
+      await controller.callback(undefined as any, undefined, req, res);
+
+      expect(res.redirect).toHaveBeenCalledWith('http://frontend.test/auth/failed?reason=missing_code');
     });
 
-    it('should throw BadRequestException if code_verifier cookie is missing', async () => {
+    it('should redirect to auth failed if code_verifier cookie is missing', async () => {
       const req = mockRequest({});
       const res = mockResponse();
-      await expect(controller.callback('some-code', req, res)).rejects.toThrow(BadRequestException);
+      await controller.callback('some-code', undefined, req, res);
+
+      expect(res.redirect).toHaveBeenCalledWith('http://frontend.test/auth/failed?reason=session_expired');
     });
 
-    it('should exchange code for token, validate user, and return JWT on success', async () => {
+    it('should exchange code for token, validate user, and redirect to frontend callback', async () => {
       const req = mockRequest({ code_verifier: 'test-verifier' });
       const res = mockResponse();
       const code = 'test-code';
@@ -123,45 +136,28 @@ describe('AuthController', () => {
       jest.spyOn(authService, 'validateUser').mockResolvedValue(user as any);
       jest.spyOn(authService, 'login').mockResolvedValue(jwt);
 
-      const result = await controller.callback(code, req, res);
+      await controller.callback(code, '%2Fwrite', req, res);
 
       expect(res.clearCookie).toHaveBeenCalledWith('code_verifier');
       expect(httpService.post).toHaveBeenCalled();
       expect(idpService.validateAccessToken).toHaveBeenCalledWith(accessToken);
       expect(authService.validateUser).toHaveBeenCalledWith(userInfo);
       expect(authService.login).toHaveBeenCalledWith(user);
-      expect(result).toEqual({
-        message: 'Login successful',
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          studentId: user.studentId,
-        },
-        access_token: jwt.access_token,
-      });
+      expect(res.redirect).toHaveBeenCalledWith(
+        'http://frontend.test/auth/callback?redirect_url=%2Fwrite',
+      );
     });
 
-    it('should throw UnauthorizedException if authService.validateUser throws UnauthorizedException', async () => {
-      const req = mockRequest({ code_verifier: 'test-verifier' });
-      const res = mockResponse();
-      const code = 'test-code';
-
-      jest.spyOn(httpService, 'post').mockReturnValue(of({ data: { access_token: 'token' } } as any));
-      jest.spyOn(idpService, 'validateAccessToken').mockResolvedValue({} as any);
-      jest.spyOn(authService, 'validateUser').mockRejectedValue(new UnauthorizedException('Not a student'));
-
-      await expect(controller.callback(code, req, res)).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('should throw InternalServerErrorException on unexpected errors', async () => {
+    it('should redirect to auth failed on unexpected errors', async () => {
       const req = mockRequest({ code_verifier: 'test-verifier' });
       const res = mockResponse();
       const code = 'test-code';
 
       jest.spyOn(httpService, 'post').mockReturnValue(throwError(() => new Error('Network error')));
 
-      await expect(controller.callback(code, req, res)).rejects.toThrow(InternalServerErrorException);
+      await controller.callback(code, undefined, req, res);
+
+      expect(res.redirect).toHaveBeenCalledWith('http://frontend.test/auth/failed?reason=login_failed');
     });
   });
 });
