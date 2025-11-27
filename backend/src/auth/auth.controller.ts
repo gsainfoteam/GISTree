@@ -40,6 +40,7 @@ export class AuthController {
     // For 'plain' method, code_challenge is the same as code_verifier
     const codeVerifier = crypto.randomBytes(32).toString('hex');
     const codeChallenge = codeVerifier;
+    const nonce = crypto.randomBytes(16).toString('hex');
 
     // 2. Store code_verifier in httpOnly cookie
     res.cookie('code_verifier', codeVerifier, {
@@ -56,6 +57,7 @@ export class AuthController {
     authUrl.searchParams.set('scope', 'openid profile student_id email');
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'plain');
+    authUrl.searchParams.set('nonce', nonce);
 
     const safeRedirectPath = this.getSafeRedirectPath(redirectUrl, frontendUrl);
     const statePath = safeRedirectPath || '/';
