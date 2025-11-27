@@ -1,10 +1,16 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { OrnamentsService } from '../ornaments/ornaments.service';
 
 @Injectable()
 export class MessagesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+    private ornamentsService: OrnamentsService,
+  ) { }
 
   async sendMessage(senderId: string, dto: CreateMessageDto) {
     const { receiverStudentId, receiverName, content, isAnonymous } = dto;
@@ -31,8 +37,42 @@ export class MessagesService {
         receiver: {
           connect: { id: receiver.id },
         },
+        replyTo: dto.replyToId ? { connect: { id: dto.replyToId } } : undefined,
       },
     });
+
+    // Create notification for receiver
+    await this.notificationsService.createNotification(
+      receiver.id,
+      'MESSAGE_RECEIVED',
+      'New Message Received',
+      `You have received a new message from ${isAnonymous ? 'Anonymous' : 'a friend'}!`,
+      '/inbox'
+    );
+
+    // Award random ornament to sender
+    const allOrnaments = await this.ornamentsService.getAllOrnaments();
+    if (allOrnaments.length > 0) {
+      const randomOrnament = allOrnaments[Math.floor(Math.random() * allOrnaments.length)];
+
+      // Check if user already has this ornament (optional, but let's allow duplicates or just count them? Schema has UserOrnament)
+      // For now, just add it.
+      await this.prisma.userOrnament.create({
+        data: {
+          userId: senderId,
+          ornamentId: randomOrnament.id,
+        },
+      });
+
+      // Notify sender about earned ornament
+      await this.notificationsService.createNotification(
+        senderId,
+        'ORNAMENT_EARNED',
+        'Ornament Earned!',
+        `You earned a new ornament: ${randomOrnament.name}!`,
+        '/'
+      );
+    }
 
     return message;
   }

@@ -16,4 +16,8 @@ export class CreateMessageDto {
   @IsBoolean()
   @IsOptional()
   isAnonymous?: boolean;
+
+  @IsString()
+  @IsOptional()
+  replyToId?: string;
 }

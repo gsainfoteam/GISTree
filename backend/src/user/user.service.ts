@@ -45,7 +45,7 @@ export class UserService {
   }
 
   async searchUsers(query: string) {
-    return this.prisma.user.findMany({
+    const users = await this.prisma.user.findMany({
       where: {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
@@ -58,6 +58,55 @@ export class UserService {
         studentId: true,
       },
       take: 10,
+    });
+
+    // Extract admission year from studentId (e.g., 20241423 -> 24)
+    return users.map(user => ({
+      ...user,
+      admissionYear: this.extractAdmissionYear(user.studentId),
+    }));
+  }
+
+  private extractAdmissionYear(studentId: string): string {
+    // Assuming studentId format is YYYYXXXX where YYYY is the year
+    // Extract last 2 digits of year (e.g., 2024 -> 24)
+    if (studentId && studentId.length >= 4) {
+      const year = studentId.substring(0, 4);
+      return year.substring(2, 4);
+    }
+    return '';
+  }
+  async updateMailboxSettings(userId: string, isProtected: boolean, password?: string) {
+    return this.prisma.mailboxSettings.upsert({
+      where: { userId },
+      update: {
+        isProtected,
+        password,
+      },
+      create: {
+        userId,
+        isProtected,
+        password,
+      },
+    });
+  }
+
+  async updateTreeSettings(userId: string, isLocked: boolean, password?: string) {
+    // Tree might need initial decorations if created for the first time
+    // But here we just update settings.
+    // If tree doesn't exist, we create it with empty decorations.
+    return this.prisma.userTree.upsert({
+      where: { userId },
+      update: {
+        isLocked,
+        password,
+      },
+      create: {
+        userId,
+        isLocked,
+        password,
+        decorations: {}, // Empty decorations
+      },
     });
   }
 }
