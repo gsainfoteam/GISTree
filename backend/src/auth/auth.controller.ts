@@ -34,7 +34,7 @@ export class AuthController {
     const clientId = this.configService.getOrThrow<string>('IDP_CLIENT_ID');
     const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
     const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
-    const redirectUri = `${backendUrl}/auth/callback`;
+    const redirectUri = this.configService.get<string>('IDP_CALLBACK_URL') || `${backendUrl}/auth/callback`;
 
     // 1. Generate PKCE code_verifier and code_challenge
     // For 'plain' method, code_challenge is the same as code_verifier
@@ -53,7 +53,7 @@ export class AuthController {
     authUrl.searchParams.set('client_id', clientId);
     authUrl.searchParams.set('redirect_uri', redirectUri);
     authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('scope', 'profile student_id email');
+    authUrl.searchParams.set('scope', 'openid profile student_id email');
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'plain');
 
@@ -117,7 +117,7 @@ export class AuthController {
     try {
       const clientId = this.configService.getOrThrow<string>('IDP_CLIENT_ID');
       const clientSecret = this.configService.getOrThrow<string>('IDP_CLIENT_SECRET');
-      const redirectUri = `${backendUrl}/auth/callback`;
+      const redirectUri = this.configService.get<string>('IDP_CALLBACK_URL') || `${backendUrl}/auth/callback`;
 
       // 1. Exchange Authorization Code for Access Token
       const tokenParams = new URLSearchParams({
