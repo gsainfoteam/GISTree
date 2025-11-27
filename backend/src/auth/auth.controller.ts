@@ -53,9 +53,7 @@ export class AuthController {
     authUrl.searchParams.set('client_id', clientId);
     authUrl.searchParams.set('redirect_uri', redirectUri);
     authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('scope', 'openid profile student_id email');
-    const nonce = crypto.randomBytes(16).toString('hex');
-    authUrl.searchParams.set('nonce', nonce);
+    authUrl.searchParams.set('scope', 'profile student_id email');
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'plain');
 
@@ -64,45 +62,49 @@ export class AuthController {
     const state = Buffer.from(statePath).toString('base64');
     authUrl.searchParams.set('state', state);
 
+    console.log('--- IDP Login Debug ---');
+    console.log('Client ID:', clientId);
+    console.log('Redirect URI:', redirectUri);
+    console.log('Generated Auth URL:', authUrl.toString());
+    console.log('-----------------------');
+
     return res.redirect(authUrl.toString());
   }
 
   @Get('callback')
   @ApiOperation({
     summary: 'GIST IDP OAuth2 콜백',
-    description: 'GIST IDP 로그인 후 리다이렉트되는 엔드포인트입니다. Authorization code를 받아 Access Token으로 교환하고 사용자 정보를 조회합니다.'
-  })
   @ApiQuery({
-    name: 'code',
-    description: 'GIST IDP에서 발급한 Authorization Code',
-    required: true
-  })
-  @ApiQuery({
-    name: 'state',
-    description: 'OAuth2 state 파라미터 (리다이렉트 URL 포함)',
-    required: false
-  })
-  @ApiResponse({
-    status: 302,
-    description: '프론트엔드로 리다이렉트 (성공 시 토큰 포함)'
-  })
-  async callback(
-    @Query('code') code: string,
-    @Query('state') state: string | undefined,
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
+      name: 'code',
+      description: 'GIST IDP에서 발급한 Authorization Code',
+      required: true
+    })
+    @ApiQuery({
+      name: 'state',
+      description: 'OAuth2 state 파라미터 (리다이렉트 URL 포함)',
+      required: false
+    })
+    @ApiResponse({
+      status: 302,
+      description: '프론트엔드로 리다이렉트 (성공 시 토큰 포함)'
+    })
+    async callback(
+      @Query('code') code: string,
+      @Query('state') state: string | undefined,
+      @Req() req: Request,
+      @Res() res: Response,
+    ) {
     const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
     const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
 
     console.log('Callback received:', { code, state });
 
-    if (!code) {
+    if(!code) {
       return res.redirect(`${frontendUrl}/auth/failed?reason=missing_code`);
     }
 
     const codeVerifier = req.cookies['code_verifier'];
-    if (!codeVerifier) {
+    if(!codeVerifier) {
       console.error('No code_verifier cookie found');
       return res.redirect(`${frontendUrl}/auth/failed?reason=session_expired`);
     }
@@ -166,7 +168,7 @@ export class AuthController {
       });
 
       let decodedState = '/';
-      if (state) {
+      if(state) {
         try {
           decodedState = Buffer.from(state, 'base64').toString('utf-8');
         } catch (e) {
@@ -179,41 +181,41 @@ export class AuthController {
 
       return res.redirect(frontendRedirect);
 
-    } catch (error) {
+    } catch(error) {
       console.error('Login failed:', error);
       return res.redirect(`${frontendUrl}/auth/failed?reason=login_failed`);
     }
   }
 
   @Post('logout')
-  @ApiOperation({ summary: '로그아웃', description: 'HttpOnly 쿠키를 삭제하여 로그아웃합니다.' })
-  @ApiResponse({ status: 200, description: '로그아웃 성공' })
-  async logout(@Res() res: Response) {
+    @ApiOperation({ summary: '로그아웃', description: 'HttpOnly 쿠키를 삭제하여 로그아웃합니다.' })
+    @ApiResponse({ status: 200, description: '로그아웃 성공' })
+    async logout(@Res() res: Response) {
     res.clearCookie('access_token');
     res.clearCookie('csrf_token');
     return res.status(200).json({ message: 'Logged out successfully' });
   }
 
   private getSafeRedirectPath(rawRedirect: string | undefined, frontendUrl: string): string | undefined {
-    if (!rawRedirect) return undefined;
+    if(!rawRedirect) return undefined;
 
     try {
       const decoded = decodeURIComponent(rawRedirect);
 
-      if (decoded.startsWith('/')) {
-        return decoded;
-      }
+      if(decoded.startsWith('/')) {
+  return decoded;
+}
 
-      const frontendOrigin = new URL(frontendUrl);
-      const target = new URL(decoded, frontendOrigin);
+const frontendOrigin = new URL(frontendUrl);
+const target = new URL(decoded, frontendOrigin);
 
-      if (target.origin === frontendOrigin.origin) {
-        return target.pathname + target.search + target.hash;
-      }
+if (target.origin === frontendOrigin.origin) {
+  return target.pathname + target.search + target.hash;
+}
     } catch (error) {
-      console.warn('Invalid redirect url provided', error);
-    }
+  console.warn('Invalid redirect url provided', error);
+}
 
-    return undefined;
+return undefined;
   }
 }
