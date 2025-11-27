@@ -39,6 +39,7 @@ services:
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET}
       
+      IDP_URL: ${IDP_ISSUER_URL}
       # IDP 관련 설정 (필요 시 .env에 값 추가)
       IDP_ISSUER_URL: ${IDP_ISSUER_URL}
       IDP_CLIENT_ID: ${IDP_CLIENT_ID}
