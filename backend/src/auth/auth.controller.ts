@@ -182,7 +182,7 @@ export class AuthController {
       }
 
       const redirectPath = this.getSafeRedirectPath(decodedState, frontendUrl) ?? '/';
-      const frontendRedirect = `${frontendUrl}/auth/callback?redirect_url=${encodeURIComponent(redirectPath)}`;
+      const frontendRedirect = `${frontendUrl}/auth/callback?redirect_url=${encodeURIComponent(redirectPath)}&access_token=${jwt.access_token}`;
 
       return res.redirect(frontendRedirect);
 
