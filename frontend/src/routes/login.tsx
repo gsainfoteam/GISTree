@@ -4,9 +4,11 @@ export const Route = createFileRoute('/login')({
   component: LoginPage,
 })
 
+import { getApiUrl } from '../config';
+
 function LoginPage() {
   const handleLogin = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const apiUrl = getApiUrl();
     window.location.href = `${apiUrl}/auth/login`;
   };
 

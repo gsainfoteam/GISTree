@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { Tree } from '../../components/Tree'
 import { useAuth } from '../../context/AuthContext'
+import { getApiUrl } from '../../config'
 
 export const Route = createFileRoute('/tree/$userId')({
   component: TreePage,
@@ -22,7 +23,7 @@ function TreePage() {
 
   const fetchTree = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/trees/${userId}`, {
         credentials: 'include',
       });

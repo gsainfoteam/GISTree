@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+import { getApiUrl } from '../config'
 
 export const Route = createFileRoute('/send-message')({
   component: SendMessagePage,
@@ -19,7 +20,7 @@ function SendMessagePage() {
     setErrorMessage('')
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/messages`, {
         method: 'POST',
         headers: {

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { UserSearch } from '../../components/UserSearch'
 import { useAuth } from '../../context/AuthContext'
+import { getApiUrl } from '../../config'
 
 export const Route = createFileRoute('/write/')({
   component: WritePage,
@@ -28,7 +29,7 @@ function WritePage() {
     setErrorMessage('')
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/messages`, {
         method: 'POST',
         headers: {
