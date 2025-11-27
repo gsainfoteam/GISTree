@@ -121,6 +121,15 @@ export class AuthController {
       const jwt = await this.authService.login(user);
 
       // 5. Set HttpOnly Cookie and Redirect
+      const csrfToken = crypto.randomBytes(32).toString('hex');
+
+      res.cookie('csrf_token', csrfToken, {
+        httpOnly: false, // Accessible to JavaScript
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+
       res.cookie('access_token', jwt.access_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

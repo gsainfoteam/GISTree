@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { CsrfGuard } from './auth/csrf.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,9 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Global CSRF Guard
+  app.useGlobalGuards(new CsrfGuard());
 
   // CORS 설정
   app.enableCors({
