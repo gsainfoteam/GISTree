@@ -26,6 +26,8 @@ function InboxPage() {
   useEffect(() => {
     if (user) {
       fetchMessages()
+    } else {
+      setIsLoading(false)
     }
   }, [user])
 

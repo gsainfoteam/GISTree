@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { TreeDecorations } from './interfaces/decorations.interface';
 
 @Injectable()
 export class TreesService {
@@ -27,15 +28,15 @@ export class TreesService {
     return tree;
   }
 
-  async updateTreeDecorations(userId: string, decorations: any) {
+  async updateTreeDecorations(userId: string, decorations: TreeDecorations) {
     return this.prisma.userTree.upsert({
       where: { userId },
       update: {
-        decorations,
+        decorations: decorations as any, // Prisma expects Json, so we cast to any or InputJsonValue
       },
       create: {
         userId,
-        decorations,
+        decorations: decorations as any,
         isLocked: false,
       },
     });

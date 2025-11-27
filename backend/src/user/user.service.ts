@@ -1,6 +1,7 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserInfo } from '@libs/infoteam-idp';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -44,6 +45,16 @@ export class UserService {
     });
   }
 
+  async findByIdWithSettings(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        mailboxSettings: true,
+        tree: true,
+      },
+    });
+  }
+
   async searchUsers(query: string) {
     const users = await this.prisma.user.findMany({
       where: {
@@ -77,34 +88,49 @@ export class UserService {
     return '';
   }
   async updateMailboxSettings(userId: string, isProtected: boolean, password?: string) {
+    if (isProtected && !password) {
+      throw new BadRequestException('Password is required when mailbox is protected');
+    }
+
+    let hashedPassword: string | undefined = undefined;
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
     return this.prisma.mailboxSettings.upsert({
       where: { userId },
       update: {
         isProtected,
-        password,
+        ...(hashedPassword ? { password: hashedPassword } : {}),
       },
       create: {
         userId,
         isProtected,
-        password,
+        password: hashedPassword || '',
       },
     });
   }
 
   async updateTreeSettings(userId: string, isLocked: boolean, password?: string) {
-    // Tree might need initial decorations if created for the first time
-    // But here we just update settings.
-    // If tree doesn't exist, we create it with empty decorations.
+    if (isLocked && !password) {
+      throw new BadRequestException('Password is required when tree is locked');
+    }
+
+    let hashedPassword: string | undefined = undefined;
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
     return this.prisma.userTree.upsert({
       where: { userId },
       update: {
         isLocked,
-        password,
+        ...(hashedPassword ? { password: hashedPassword } : {}),
       },
       create: {
         userId,
         isLocked,
-        password,
+        password: hashedPassword || '',
         decorations: {}, // Empty decorations
       },
     });

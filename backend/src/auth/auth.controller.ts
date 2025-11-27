@@ -144,4 +144,12 @@ export class AuthController {
       return res.redirect(`${frontendUrl}/auth/failed?reason=login_failed`);
     }
   }
+  @Get('logout') // Or POST, but GET is easier for simple link, though POST is better for state change. Review suggested POST.
+  @ApiOperation({ summary: '로그아웃', description: 'HttpOnly 쿠키를 삭제하여 로그아웃합니다.' })
+  @ApiResponse({ status: 200, description: '로그아웃 성공' })
+  async logout(@Res() res: Response) {
+    res.clearCookie('access_token');
+    res.clearCookie('csrf_token');
+    return res.status(200).json({ message: 'Logged out successfully' });
+  }
 }

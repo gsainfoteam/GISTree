@@ -51,14 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    // Implement logout logic (clear cookies, etc.)
-    // For now, just reload or clear state?
-    // Backend doesn't have logout endpoint yet?
-    // Usually just clearing cookies on client side or calling logout endpoint.
-    // I'll add logout endpoint later or just clear cookies if possible (HttpOnly cookies can't be cleared by JS).
-    // So I need a logout endpoint.
-    // For now, just set user to null.
-    setUser(null);
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    // Call backend to clear HttpOnly cookie
+    fetch(`${apiUrl}/auth/logout`, {
+      method: 'GET', // or POST
+      credentials: 'include',
+    }).finally(() => {
+      setUser(null);
+      // Optional: Redirect to home or login
+      window.location.href = '/';
+    });
   };
 
   return (

@@ -12,6 +12,7 @@ function TreePage() {
   const { user } = useAuth()
   const [treeData, setTreeData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (userId) {
@@ -28,9 +29,14 @@ function TreePage() {
       if (response.ok) {
         const data = await response.json();
         setTreeData(data);
+      } else if (response.status === 404) {
+        setError('Tree not found');
+      } else {
+        setError('Failed to load tree');
       }
     } catch (error) {
       console.error('Failed to fetch tree', error);
+      setError('Failed to load tree');
     } finally {
       setIsLoading(false);
     }
@@ -38,6 +44,10 @@ function TreePage() {
 
   if (isLoading) {
     return <div className="p-4">Loading tree...</div>
+  }
+
+  if (error) {
+    return <div className="p-4 text-red-600">{error}</div>
   }
 
   if (!treeData) {

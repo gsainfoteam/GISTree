@@ -26,55 +26,70 @@ export class MessagesService {
       throw new NotFoundException('Receiver not found or name does not match.');
     }
 
-    // Create message
-    const message = await this.prisma.message.create({
-      data: {
-        content,
-        isAnonymous: isAnonymous || false,
-        sender: {
-          connect: { id: senderId },
-        },
-        receiver: {
-          connect: { id: receiver.id },
-        },
-        replyTo: dto.replyToId ? { connect: { id: dto.replyToId } } : undefined,
-      },
-    });
-
-    // Create notification for receiver
-    await this.notificationsService.createNotification(
-      receiver.id,
-      'MESSAGE_RECEIVED',
-      'New Message Received',
-      `You have received a new message from ${isAnonymous ? 'Anonymous' : 'a friend'}!`,
-      '/inbox'
-    );
-
-    // Award random ornament to sender
-    const allOrnaments = await this.ornamentsService.getAllOrnaments();
-    if (allOrnaments.length > 0) {
-      const randomOrnament = allOrnaments[Math.floor(Math.random() * allOrnaments.length)];
-
-      // Check if user already has this ornament (optional, but let's allow duplicates or just count them? Schema has UserOrnament)
-      // For now, just add it.
-      await this.prisma.userOrnament.create({
+    // Use transaction to ensure atomicity
+    return await this.prisma.$transaction(async (tx) => {
+      // Create message
+      const message = await tx.message.create({
         data: {
-          userId: senderId,
-          ornamentId: randomOrnament.id,
+          content,
+          isAnonymous: isAnonymous || false,
+          sender: {
+            connect: { id: senderId },
+          },
+          receiver: {
+            connect: { id: receiver.id },
+          },
+          replyTo: dto.replyToId ? { connect: { id: dto.replyToId } } : undefined,
         },
       });
 
-      // Notify sender about earned ornament
-      await this.notificationsService.createNotification(
-        senderId,
-        'ORNAMENT_EARNED',
-        'Ornament Earned!',
-        `You earned a new ornament: ${randomOrnament.name}!`,
-        '/'
-      );
-    }
+      // Create notification for receiver
+      await tx.notification.create({
+        data: {
+          userId: receiver.id,
+          type: 'MESSAGE_RECEIVED',
+          title: 'New Message Received',
+          content: `You have received a new message from ${isAnonymous ? 'Anonymous' : 'a friend'}!`,
+          link: '/inbox',
+        },
+      });
 
-    return message;
+      // Award random ornament to sender
+      const allOrnaments = await tx.ornament.findMany();
+      if (allOrnaments.length > 0) {
+        const randomOrnament = allOrnaments[Math.floor(Math.random() * allOrnaments.length)];
+
+        // Check for duplicates if business rule requires uniqueness
+        const existingOrnament = await tx.userOrnament.findFirst({
+          where: {
+            userId: senderId,
+            ornamentId: randomOrnament.id,
+          },
+        });
+
+        if (!existingOrnament) {
+          await tx.userOrnament.create({
+            data: {
+              userId: senderId,
+              ornamentId: randomOrnament.id,
+            },
+          });
+
+          // Notify sender about earned ornament
+          await tx.notification.create({
+            data: {
+              userId: senderId,
+              type: 'ORNAMENT_EARNED',
+              title: 'Ornament Earned!',
+              content: `You earned a new ornament: ${randomOrnament.name}!`,
+              link: '/',
+            },
+          });
+        }
+      }
+
+      return message;
+    });
   }
 
   async getReceivedMessages(userId: string) {

@@ -13,7 +13,10 @@ export function Tree({ userId, decorations, isLocked }: TreeProps) {
       <div className="absolute inset-0 bg-gradient-to-b from-blue-900 to-blue-700 opacity-80"></div>
 
       {/* Tree SVG/Canvas */}
-      <div className="relative z-10 w-64 h-80 bg-green-800 clip-path-triangle flex items-center justify-center">
+      <div
+        className="relative z-10 w-64 h-80 bg-green-800 flex items-center justify-center"
+        style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}
+      >
         <span className="text-white">Tree for {userId}</span>
         {/* Render ornaments based on decorations */}
       </div>

@@ -6,7 +6,8 @@ export const Route = createFileRoute('/login')({
 
 function LoginPage() {
   const handleLogin = () => {
-    window.location.href = 'http://localhost:3000/auth/login';
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    window.location.href = `${apiUrl}/auth/login`;
   };
 
   return (

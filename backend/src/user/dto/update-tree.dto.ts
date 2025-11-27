@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateTreeDto {
@@ -8,6 +8,6 @@ export class UpdateTreeDto {
 
   @ApiProperty({ description: '트리 비밀번호 (잠금 시 필수)', required: false })
   @IsString()
-  @IsOptional()
+  @ValidateIf((o) => o.isLocked === true)
   password?: string;
 }

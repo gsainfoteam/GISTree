@@ -37,13 +37,28 @@ export class UserController {
     status: 401,
     description: '인증되지 않은 사용자'
   })
-  getMe(@GetUser() user: User) {
+  async getMe(@GetUser() user: User) {
+    const userWithSettings = await this.userService.findByIdWithSettings(user.id);
+    if (!userWithSettings) {
+      // Should not happen if authenticated, but for safety
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        studentId: user.studentId,
+        createdAt: user.createdAt,
+        mailboxSettings: null,
+        tree: null,
+      };
+    }
     return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      studentId: user.studentId,
-      createdAt: user.createdAt,
+      id: userWithSettings.id,
+      name: userWithSettings.name,
+      email: userWithSettings.email,
+      studentId: userWithSettings.studentId,
+      createdAt: userWithSettings.createdAt,
+      mailboxSettings: userWithSettings.mailboxSettings,
+      tree: userWithSettings.tree,
     };
   }
   @Get('search')
