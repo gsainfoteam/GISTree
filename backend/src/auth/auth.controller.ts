@@ -58,6 +58,7 @@ export class AuthController {
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'plain');
     authUrl.searchParams.set('nonce', nonce);
+    authUrl.searchParams.set('prompt', 'consent');
 
     const safeRedirectPath = this.getSafeRedirectPath(redirectUrl, frontendUrl);
     const statePath = safeRedirectPath || '/';
