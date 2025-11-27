@@ -5,19 +5,23 @@ export const Route = createFileRoute('/auth/callback')({
   component: AuthCallback,
   validateSearch: (search: Record<string, unknown>) => ({
     redirect_url: typeof search.redirect_url === 'string' ? search.redirect_url : '/',
+    access_token: typeof search.access_token === 'string' ? search.access_token : undefined,
   }),
 })
 
 function AuthCallback() {
-  const { redirect_url } = Route.useSearch()
+  const { redirect_url, access_token } = Route.useSearch()
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Cookie is set by the server (HttpOnly)
-    // Just redirect to the next page
+    if (access_token) {
+      localStorage.setItem('access_token', access_token);
+    }
+
+    // Redirect to the next page
     const target = redirect_url?.startsWith('/') ? redirect_url : '/'
     navigate({ to: target })
-  }, [navigate, redirect_url])
+  }, [navigate, redirect_url, access_token])
 
   return <div>Logging in...</div>
 }
