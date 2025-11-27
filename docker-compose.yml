@@ -33,7 +33,7 @@ services:
       # 2. 따라서 DATABASE_URL을 여기서 직접 조합해서 주입합니다.
       DATABASE_URL: postgresql://${POSTGRES_USER:-gistree}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-gistree_db}?schema=public
 
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET}
       FRONTEND_URL: ${FRONTEND_URL}
