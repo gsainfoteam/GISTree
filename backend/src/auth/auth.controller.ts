@@ -5,7 +5,7 @@ import { InfoteamIdpService } from '@libs/infoteam-idp';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import { Response, Request } from 'express';
+import * as express from 'express';
 import * as crypto from 'crypto';
 
 @ApiTags('auth')
@@ -29,7 +29,7 @@ export class AuthController {
     required: false
   })
   @ApiResponse({ status: 302, description: 'IDP 로그인 페이지로 리다이렉트' })
-  async login(@Res() res: Response, @Query('redirect_url') redirectUrl?: string) {
+  async login(@Res() res: express.Response, @Query('redirect_url') redirectUrl?: string) {
     console.log('Login initiated with redirect_url:', redirectUrl);
     const clientId = this.configService.getOrThrow<string>('IDP_CLIENT_ID');
     const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
@@ -93,8 +93,8 @@ export class AuthController {
   async callback(
     @Query('code') code: string,
     @Query('state') state: string | undefined,
-    @Req() req: Request,
-    @Res() res: Response,
+    @Req() req: express.Request,
+    @Res() res: express.Response,
   ) {
     const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
     const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
@@ -192,7 +192,7 @@ export class AuthController {
   @Post('logout')
   @ApiOperation({ summary: '로그아웃', description: 'HttpOnly 쿠키를 삭제하여 로그아웃합니다.' })
   @ApiResponse({ status: 200, description: '로그아웃 성공' })
-  async logout(@Res() res: Response) {
+  async logout(@Res() res: express.Response) {
     res.clearCookie('access_token');
     res.clearCookie('csrf_token');
     return res.status(200).json({ message: 'Logged out successfully' });
