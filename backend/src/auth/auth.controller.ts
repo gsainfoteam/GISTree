@@ -53,7 +53,7 @@ export class AuthController {
 
     const safeRedirectPath = this.getSafeRedirectPath(redirectUrl, frontendUrl);
     if (safeRedirectPath) {
-      authUrl.searchParams.set('state', encodeURIComponent(safeRedirectPath));
+      authUrl.searchParams.set('state', safeRedirectPath);
     }
 
     return res.redirect(authUrl.toString());

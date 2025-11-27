@@ -101,7 +101,7 @@ describe('AuthController', () => {
 
       await controller.login(res, '/write?tab=inbox');
 
-      expect(res.redirect).toHaveBeenCalledWith(expect.stringContaining('state=%252Fwrite%253Ftab%253Dinbox'));
+      expect(res.redirect).toHaveBeenCalledWith(expect.stringContaining('state=%2Fwrite%3Ftab%3Dinbox'));
     });
   });
 
