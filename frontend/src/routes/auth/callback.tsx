@@ -11,7 +11,7 @@ function AuthCallback() {
   useEffect(() => {
     // Cookie is set by the server (HttpOnly)
     // Just redirect to the next page
-    navigate({ to: '/send-message' })
+    navigate({ to: '/' })
   }, [navigate])
 
   return <div>Logging in...</div>

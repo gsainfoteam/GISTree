@@ -1,10 +1,16 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { OrnamentsService } from '../ornaments/ornaments.service';
 
 @Injectable()
 export class MessagesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+    private ornamentsService: OrnamentsService,
+  ) { }
 
   async sendMessage(senderId: string, dto: CreateMessageDto) {
     const { receiverStudentId, receiverName, content, isAnonymous } = dto;
@@ -20,21 +26,86 @@ export class MessagesService {
       throw new NotFoundException('Receiver not found or name does not match.');
     }
 
-    // Create message
-    const message = await this.prisma.message.create({
-      data: {
-        content,
-        isAnonymous: isAnonymous || false,
-        sender: {
-          connect: { id: senderId },
-        },
-        receiver: {
-          connect: { id: receiver.id },
-        },
-      },
-    });
+    // Validate replyToId if present
+    if (dto.replyToId) {
+      const originalMessage = await this.prisma.message.findUnique({
+        where: { id: dto.replyToId },
+      });
 
-    return message;
+      if (!originalMessage) {
+        throw new NotFoundException('Original message not found');
+      }
+
+      // Check if sender is a participant (sender or receiver) of the original message
+      if (originalMessage.senderId !== senderId && originalMessage.receiverId !== senderId) {
+        throw new UnauthorizedException('You cannot reply to a message you are not a participant of');
+      }
+    }
+
+    // Use transaction to ensure atomicity
+    return await this.prisma.$transaction(async (tx) => {
+      // Create message
+      const message = await tx.message.create({
+        data: {
+          content,
+          isAnonymous: isAnonymous || false,
+          sender: {
+            connect: { id: senderId },
+          },
+          receiver: {
+            connect: { id: receiver.id },
+          },
+          replyTo: dto.replyToId ? { connect: { id: dto.replyToId } } : undefined,
+        },
+      });
+
+      // Create notification for receiver
+      await tx.notification.create({
+        data: {
+          userId: receiver.id,
+          type: 'MESSAGE_RECEIVED',
+          title: 'New Message Received',
+          content: `You have received a new message from ${isAnonymous ? 'Anonymous' : 'a friend'}!`,
+          link: '/inbox',
+        },
+      });
+
+      // Award random ornament to sender
+      const allOrnaments = await tx.ornament.findMany();
+      if (allOrnaments.length > 0) {
+        const randomOrnament = allOrnaments[Math.floor(Math.random() * allOrnaments.length)];
+
+        // Check for duplicates if business rule requires uniqueness
+        const existingOrnament = await tx.userOrnament.findFirst({
+          where: {
+            userId: senderId,
+            ornamentId: randomOrnament.id,
+          },
+        });
+
+        if (!existingOrnament) {
+          await tx.userOrnament.create({
+            data: {
+              userId: senderId,
+              ornamentId: randomOrnament.id,
+            },
+          });
+
+          // Notify sender about earned ornament
+          await tx.notification.create({
+            data: {
+              userId: senderId,
+              type: 'ORNAMENT_EARNED',
+              title: 'Ornament Earned!',
+              content: `You earned a new ornament: ${randomOrnament.name}!`,
+              link: '/',
+            },
+          });
+        }
+      }
+
+      return message;
+    });
   }
 
   async getReceivedMessages(userId: string) {
