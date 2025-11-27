@@ -42,17 +42,28 @@ function ProfilePage() {
   }, [user]);
 
   const handleSaveMailbox = async () => {
+    if (mailboxProtected && !mailboxPassword) {
+      alert('Password is required when enabling mailbox protection.');
+      return;
+    }
+
     setStatus('saving')
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const payload: any = { isProtected: mailboxProtected };
+      if (mailboxPassword) {
+        payload.password = mailboxPassword;
+      }
+
       const response = await fetch(`${apiUrl}/users/me/mailbox`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ isProtected: mailboxProtected, password: mailboxPassword }),
+        body: JSON.stringify(payload),
       })
       if (response.ok) {
         setStatus('success')
+        setMailboxPassword('') // Clear password after save
       } else {
         setStatus('error')
       }
@@ -62,17 +73,28 @@ function ProfilePage() {
   }
 
   const handleSaveTree = async () => {
+    if (treeLocked && !treePassword) {
+      alert('Password is required when locking the tree.');
+      return;
+    }
+
     setStatus('saving')
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const payload: any = { isLocked: treeLocked };
+      if (treePassword) {
+        payload.password = treePassword;
+      }
+
       const response = await fetch(`${apiUrl}/users/me/tree`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ isLocked: treeLocked, password: treePassword }),
+        body: JSON.stringify(payload),
       })
       if (response.ok) {
         setStatus('success')
+        setTreePassword('') // Clear password after save
       } else {
         setStatus('error')
       }
@@ -117,7 +139,11 @@ function ProfilePage() {
             className="w-full p-2 border rounded mb-4"
           />
         )}
-        <button onClick={handleSaveMailbox} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button
+          onClick={handleSaveMailbox}
+          disabled={mailboxProtected && !mailboxPassword}
+          className={`px-4 py-2 rounded text-white ${mailboxProtected && !mailboxPassword ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+        >
           Save Mailbox Settings
         </button>
       </div>
@@ -143,7 +169,11 @@ function ProfilePage() {
             className="w-full p-2 border rounded mb-4"
           />
         )}
-        <button onClick={handleSaveTree} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button
+          onClick={handleSaveTree}
+          disabled={treeLocked && !treePassword}
+          className={`px-4 py-2 rounded text-white ${treeLocked && !treePassword ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+        >
           Save Tree Settings
         </button>
       </div>

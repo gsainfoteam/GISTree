@@ -1,11 +1,12 @@
-name: Deploy to EC2
+name: Deploy GISTree
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  deploy:
+  # 1. 백엔드 배포 (EC2)
+  deploy-backend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -20,7 +21,7 @@ jobs:
           source: "."
           target: "/home/ubuntu/gistree"
 
-      - name: Deploy on EC2
+      - name: Deploy Backend on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -29,6 +30,40 @@ jobs:
           script: |
             cd /home/ubuntu/gistree
             echo "${{ secrets.ENV_FILE }}" > .env
-            docker builder prune -f
-            docker compose down
-            docker compose up -d --build
+            # 백엔드 관련 이미지만 다시 빌드
+            docker compose up -d --build backend postgres
+
+  # 2. 프론트엔드 배포 (S3)
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: deploy-backend 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          # GitHub Secret에 등록한 백엔드 주소를 빌드 시점에 주입
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      - name: Deploy to S3
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: gsainfoteam-gistree-frontend
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'ap-northeast-2'
+          SOURCE_DIR: 'frontend/dist'
