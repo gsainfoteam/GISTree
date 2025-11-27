@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { useAuth } from '../context/AuthContext';
 
 export function Navbar() {
-  const { user, login, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-lg border-b border-white/20 shadow-sm">
