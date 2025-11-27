@@ -101,7 +101,7 @@ export class UserService {
       where: { userId },
       update: {
         isProtected,
-        ...(hashedPassword ? { password: hashedPassword } : {}),
+        password: isProtected ? (hashedPassword || undefined) : null, // Clear password if not protected, update if provided
       },
       create: {
         userId,
@@ -125,7 +125,7 @@ export class UserService {
       where: { userId },
       update: {
         isLocked,
-        ...(hashedPassword ? { password: hashedPassword } : {}),
+        password: isLocked ? (hashedPassword || undefined) : null, // Clear password if not locked, update if provided
       },
       create: {
         userId,

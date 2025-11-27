@@ -24,29 +24,29 @@ function InboxPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const response = await fetch(`${apiUrl}/messages`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setMessages(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch messages', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (user) {
       fetchMessages()
     } else {
       setIsLoading(false)
     }
   }, [user])
-
-  const fetchMessages = async () => {
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const response = await fetch(`${apiUrl}/messages`, {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch messages', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (!user) {
     return <div className="p-4">Please login to view your inbox.</div>

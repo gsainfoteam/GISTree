@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     // Call backend to clear HttpOnly cookie
     fetch(`${apiUrl}/auth/logout`, {
-      method: 'GET', // or POST
+      method: 'POST',
       credentials: 'include',
     }).finally(() => {
       setUser(null);
