@@ -32,14 +32,7 @@ export function Navbar() {
                 Logout
               </button>
             </>
-          ) : (
-            <button
-              onClick={login}
-              className="px-6 py-2 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-full shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
-            >
-              Login
-            </button>
-          )}
+          ) : null}
         </div>
       </div>
     </nav>

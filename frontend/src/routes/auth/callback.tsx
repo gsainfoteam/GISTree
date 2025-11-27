@@ -9,9 +9,11 @@ function AuthCallback() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const returnUrl = searchParams.get('returnUrl') || '/'
+
     // Cookie is set by the server (HttpOnly)
-    // Just redirect to the next page
-    navigate({ to: '/' })
+    navigate({ to: returnUrl as any })
   }, [navigate])
 
   return <div>Logging in...</div>

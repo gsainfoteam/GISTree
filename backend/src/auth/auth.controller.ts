@@ -24,7 +24,7 @@ export class AuthController {
     description: 'PKCE를 위한 code_verifier를 생성하고 쿠키에 저장한 후, IDP 로그인 페이지로 리다이렉트합니다.'
   })
   @ApiResponse({ status: 302, description: 'IDP 로그인 페이지로 리다이렉트' })
-  async login(@Res() res: Response) {
+  async login(@Res() res: Response, @Query('returnUrl') returnUrl: string) {
     const clientId = this.configService.getOrThrow<string>('IDP_CLIENT_ID');
     const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
     const redirectUri = `${backendUrl}/auth/callback`;
@@ -50,6 +50,10 @@ export class AuthController {
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'plain');
 
+    // Pass returnUrl as state (default to '/')
+    const state = returnUrl || '/';
+    authUrl.searchParams.set('state', state);
+
     return res.redirect(authUrl.toString());
   }
 
@@ -67,7 +71,7 @@ export class AuthController {
     status: 302,
     description: '프론트엔드로 리다이렉트 (성공 시 토큰 포함)'
   })
-  async callback(@Query('code') code: string, @Req() req: Request, @Res() res: Response) {
+  async callback(@Query('code') code: string, @Query('state') state: string = '/', @Req() req: Request, @Res() res: Response) {
     const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
     const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
 
@@ -137,7 +141,7 @@ export class AuthController {
         maxAge: 24 * 60 * 60 * 1000, // 1 day
       });
 
-      return res.redirect(`${frontendUrl}/auth/callback`);
+      return res.redirect(`${frontendUrl}/auth/callback?returnUrl=${encodeURIComponent(state)}`);
 
     } catch (error) {
       console.error('Login failed:', error);
