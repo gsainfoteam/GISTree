@@ -48,7 +48,7 @@ function RouteComponent() {
   return (
     <div className="w-full h-full flex flex-col">
       {/* 네비게이션 바 */}
-      <div className="border-b border-gray-200 px-6 py-4">
+      <div className="bg-white px-6 py-4">
         <Link 
           to="/" 
           className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
@@ -72,7 +72,7 @@ function RouteComponent() {
       </div>
 
       {/* 메시지 카드 그리드 */}
-      <div className="flex-1 overflow-auto p-6 bg-gray-200 relative">
+      <div className="flex-1 overflow-auto p-6 bg-[#FFF6E9] relative">
         <div className="grid grid-cols-2 gap-6 max-w-6xl mx-auto">
           {messages.map((message, index) => (
             <div
