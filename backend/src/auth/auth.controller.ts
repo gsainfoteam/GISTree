@@ -133,7 +133,7 @@ export class AuthController {
       console.log('Exchanging code for token...');
       const tokenResponse = await firstValueFrom(
         this.httpService.post<{ access_token: string }>(
-          'https://api.idp.gistory.me/oauth2/token',
+          'https://api.idp.gistory.me/oauth/token',
           tokenParams.toString(),
           {
             headers: {
