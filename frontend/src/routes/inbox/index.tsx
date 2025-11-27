@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { getApiUrl } from '../../config'
 
 export const Route = createFileRoute('/inbox/')({
   component: InboxPage,
@@ -26,7 +27,7 @@ function InboxPage() {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const apiUrl = getApiUrl();
         const response = await fetch(`${apiUrl}/messages`, {
           credentials: 'include',
         });

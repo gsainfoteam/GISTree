@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { getApiUrl } from '../config';
 
 interface User {
   id: string;
@@ -26,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/users/me`, {
         credentials: 'include',
       });
@@ -46,12 +47,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const apiUrl = getApiUrl();
     window.location.href = `${apiUrl}/auth/login`;
   };
 
   const logout = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const apiUrl = getApiUrl();
     // Call backend to clear HttpOnly cookie
     fetch(`${apiUrl}/auth/logout`, {
       method: 'POST',

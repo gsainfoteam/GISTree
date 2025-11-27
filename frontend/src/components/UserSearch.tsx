@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getApiUrl } from '../config';
 
 interface User {
   id: string;
@@ -22,7 +23,7 @@ export function UserSearch({ onSelect }: UserSearchProps) {
 
     setIsLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/users/search?query=${encodeURIComponent(query)}`, {
         credentials: 'include',
       });

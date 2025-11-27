@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { getApiUrl } from '../../config'
 
 export const Route = createFileRoute('/profile/')({
   component: ProfilePage,
@@ -16,7 +17,7 @@ function ProfilePage() {
 
   useEffect(() => {
     if (user) {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiUrl();
       // Fetch initial settings
       // We need an endpoint to get user settings. Assuming /users/me returns them or we need separate endpoints.
       // Based on user.service.ts, there isn't a direct "get settings" endpoint shown in the snippets, 
@@ -49,7 +50,7 @@ function ProfilePage() {
 
     setStatus('saving')
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiUrl();
       const payload: any = { isProtected: mailboxProtected };
       if (mailboxPassword) {
         payload.password = mailboxPassword;
@@ -80,7 +81,7 @@ function ProfilePage() {
 
     setStatus('saving')
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiUrl();
       const payload: any = { isLocked: treeLocked };
       if (treePassword) {
         payload.password = treePassword;
