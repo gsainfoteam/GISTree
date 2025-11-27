@@ -10,7 +10,11 @@ function Home() {
   const { user, isLoading } = useAuth()
 
   const handleLogin = () => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+    const backendUrl = import.meta.env.VITE_API_BASE_URL;
+    if (!backendUrl) {
+      console.error('VITE_API_BASE_URL is not defined');
+      return;
+    }
     const redirectUrl = encodeURIComponent(window.location.pathname);
     window.location.href = `${backendUrl}/auth/login?redirect_url=${redirectUrl}`;
   };
