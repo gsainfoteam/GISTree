@@ -25,6 +25,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 302, description: 'IDP 로그인 페이지로 리다이렉트' })
   async login(@Res() res: Response, @Query('redirect_url') redirectUrl?: string) {
+    console.log('Login initiated with redirect_url:', redirectUrl);
     const clientId = this.configService.getOrThrow<string>('IDP_CLIENT_ID');
     const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
     const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
@@ -84,12 +85,15 @@ export class AuthController {
     const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
     const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
 
+    console.log('Callback received:', { code, state });
+
     if (!code) {
       return res.redirect(`${frontendUrl}/auth/failed?reason=missing_code`);
     }
 
     const codeVerifier = req.cookies['code_verifier'];
     if (!codeVerifier) {
+      console.error('No code_verifier cookie found');
       return res.redirect(`${frontendUrl}/auth/failed?reason=session_expired`);
     }
 
@@ -109,9 +113,10 @@ export class AuthController {
         redirect_uri: redirectUri,
       });
 
+      console.log('Exchanging code for token...');
       const tokenResponse = await firstValueFrom(
         this.httpService.post<{ access_token: string }>(
-          'https://api.idp.gistory.me/oauth/token',
+          'https://api.idp.gistory.me/oauth2/token',
           tokenParams.toString(),
           {
             headers: {
