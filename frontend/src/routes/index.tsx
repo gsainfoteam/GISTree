@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import treeSvg from '../assets/Tree.svg'
+import treePng from '../assets/pngTree.png'
 
 type Ornament = {
   id: string
@@ -10,10 +10,10 @@ type Ornament = {
   radius: number
 }
 
-const CANVAS_SIZE = 600
-const TREE_PADDING = 60
+const CANVAS_SIZE = 700
+const TREE_PADDING = 40
 const TREE_CENTER_X = CANVAS_SIZE / 2
-const TREE_BOTTOM = CANVAS_SIZE - 80
+const TREE_BOTTOM = CANVAS_SIZE - 60
 const TREE_TOP = TREE_PADDING
 const treePathData = [
   'M235 581C219.656 632.181 215.206 662.267 213.5 718C263.969 747.953 291.998 747.097 341.5 718C340.754 664.441 337.099 634.453 327.5 581H235Z',
@@ -40,10 +40,26 @@ function HomeCanvas() {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    ctx.current = canvas.getContext('2d')
+    // 고해상도 디스플레이 대응
+    const dpr = window.devicePixelRatio || 1
+    
+    // 캔버스의 실제 해상도를 devicePixelRatio에 맞춰 설정
+    canvas.width = CANVAS_SIZE * dpr
+    canvas.height = CANVAS_SIZE * dpr
+    
+    // CSS 크기는 원래대로 유지
+    canvas.style.width = `${CANVAS_SIZE}px`
+    canvas.style.height = `${CANVAS_SIZE}px`
+    
+    const context = canvas.getContext('2d')
+    if (!context) return
+    
+    // 컨텍스트 스케일 조정 (모든 그리기 작업이 고해상도로 이루어지도록)
+    context.scale(dpr, dpr)
+    ctx.current = context
 
     const img = new Image()
-    img.src = treeSvg
+    img.src = treePng
     img.onload = () => {
       treeImageRef.current = img
       treePathsRef.current = treePathData.map((path) => new Path2D(path))
