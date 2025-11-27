@@ -54,6 +54,8 @@ export class AuthController {
     const safeRedirectPath = this.getSafeRedirectPath(redirectUrl, frontendUrl);
     if (safeRedirectPath) {
       authUrl.searchParams.set('state', safeRedirectPath);
+    } else {
+      authUrl.searchParams.set('state', '/');
     }
 
     return res.redirect(authUrl.toString());
@@ -158,6 +160,7 @@ export class AuthController {
       return res.redirect(`${frontendUrl}/auth/failed?reason=login_failed`);
     }
   }
+
   @Post('logout')
   @ApiOperation({ summary: '로그아웃', description: 'HttpOnly 쿠키를 삭제하여 로그아웃합니다.' })
   @ApiResponse({ status: 200, description: '로그아웃 성공' })
