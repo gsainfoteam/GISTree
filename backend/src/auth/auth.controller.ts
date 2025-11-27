@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Res, Req, BadRequestException, UnauthorizedException, InternalServerErrorException, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Query, Res, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { InfoteamIdpService } from '@libs/infoteam-idp';
@@ -24,9 +24,10 @@ export class AuthController {
     description: 'PKCE를 위한 code_verifier를 생성하고 쿠키에 저장한 후, IDP 로그인 페이지로 리다이렉트합니다.'
   })
   @ApiResponse({ status: 302, description: 'IDP 로그인 페이지로 리다이렉트' })
-  async login(@Res() res: Response) {
+  async login(@Res() res: Response, @Query('redirect_url') redirectUrl?: string) {
     const clientId = this.configService.getOrThrow<string>('IDP_CLIENT_ID');
     const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
+    const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
     const redirectUri = `${backendUrl}/auth/callback`;
 
     // 1. Generate PKCE code_verifier and code_challenge
@@ -50,6 +51,11 @@ export class AuthController {
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'plain');
 
+    const safeRedirectPath = this.getSafeRedirectPath(redirectUrl, frontendUrl);
+    if (safeRedirectPath) {
+      authUrl.searchParams.set('state', encodeURIComponent(safeRedirectPath));
+    }
+
     return res.redirect(authUrl.toString());
   }
 
@@ -67,7 +73,12 @@ export class AuthController {
     status: 302,
     description: '프론트엔드로 리다이렉트 (성공 시 토큰 포함)'
   })
-  async callback(@Query('code') code: string, @Req() req: Request, @Res() res: Response) {
+  async callback(
+    @Query('code') code: string,
+    @Query('state') state: string | undefined,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
     const backendUrl = this.configService.getOrThrow<string>('BACKEND_URL');
 
@@ -137,7 +148,10 @@ export class AuthController {
         maxAge: 24 * 60 * 60 * 1000, // 1 day
       });
 
-      return res.redirect(`${frontendUrl}/auth/callback`);
+      const redirectPath = this.getSafeRedirectPath(state, frontendUrl) ?? '/';
+      const frontendRedirect = `${frontendUrl}/auth/callback?redirect_url=${encodeURIComponent(redirectPath)}`;
+
+      return res.redirect(frontendRedirect);
 
     } catch (error) {
       console.error('Login failed:', error);
@@ -151,5 +165,28 @@ export class AuthController {
     res.clearCookie('access_token');
     res.clearCookie('csrf_token');
     return res.status(200).json({ message: 'Logged out successfully' });
+  }
+
+  private getSafeRedirectPath(rawRedirect: string | undefined, frontendUrl: string): string | undefined {
+    if (!rawRedirect) return undefined;
+
+    try {
+      const decoded = decodeURIComponent(rawRedirect);
+
+      if (decoded.startsWith('/')) {
+        return decoded;
+      }
+
+      const frontendOrigin = new URL(frontendUrl);
+      const target = new URL(decoded, frontendOrigin);
+
+      if (target.origin === frontendOrigin.origin) {
+        return target.pathname + target.search + target.hash;
+      }
+    } catch (error) {
+      console.warn('Invalid redirect url provided', error);
+    }
+
+    return undefined;
   }
 }
