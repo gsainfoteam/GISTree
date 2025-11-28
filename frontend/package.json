@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "route-gen": "tsr generate"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@tanstack/react-router-devtools": "^1.139.3",
+    "@tanstack/router-cli": "^1.139.10",
     "@tanstack/router-plugin": "^1.139.3",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
