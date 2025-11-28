@@ -67,13 +67,13 @@ function RouteComponent() {
               d="M15 19l-7-7 7-7" 
             />
           </svg>
-          <span className="font-medium">방으로 돌아가기</span>
+          <span className="font-medium">돌아가기</span>
         </Link>
       </div>
 
       {/* 메시지 카드 그리드 */}
-      <div className="flex-1 overflow-auto p-6 bg-[#FFF6E9] relative">
-        <div className="grid grid-cols-2 gap-6 max-w-6xl mx-auto">
+      <div className="flex-1 overflow-auto py-6 px-10 bg-[#FFF6E9] relative">
+        <div className="grid place-items-center gap-y-[50px] gap-x-4 grid-cols-[repeat(auto-fit,minmax(280px,1fr))] max-w-full">
           {messages.map((message, index) => (
             <div
               key={index}
