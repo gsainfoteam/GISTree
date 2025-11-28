@@ -94,7 +94,7 @@ function RouteComponent() {
 
         {/* 모달 - 사이드바와 네비게이션 바를 제외한 영역에만 표시 */}
         {isMsgOpen && selectedMsg && ( //조건이 모두 참일 때
-          <> //불필요한 div를 안 쓰려고.
+          <>
             {/* 배경 오버레이 */}
             <div 
               className="absolute inset-0 bg-black/50 z-40"
@@ -103,10 +103,10 @@ function RouteComponent() {
             
             {/* 모달 컨텐츠 */}
             <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-              <div className="flex flex-col w-[600px] h-[500px] p-[30px] justify-between items-center gap-[20px]
-              rounded-[20px] border-[5px] border-pink-200 bg-yellow-100">
+              <div className="flex flex-col w-[600px] h-[500px] py-[20px] px-[40px] justify-between items-center gap-[20px]
+              rounded-[20px] border-[10px] border-[#A12925]/20 bg-white">
               
-                <div className="bg-orange-100 w-full h-auto flex justify-end p-[10px] items-center gap-[10px]">
+                <div className="w-full h-auto flex justify-end p-[10px] items-center gap-[10px]">
                   <button onClick={() => setIsMsgOpen(false)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 30 30" fill="none">
                       <path fillRule="evenodd" clipRule="evenodd" d="M7.7836 7.78379C8.14971 7.41767 8.7433 7.41767 9.10942 7.78379L14.9998 13.6742L20.8902 7.78379C21.2563 7.41767 21.8499 7.41767 22.216 7.78379C22.5821 8.1499 22.5821 8.7435 22.216 9.10961L16.3256 15L22.216 20.8904C22.5821 21.2565 22.5821 21.8501 22.216 22.2162C21.8499 22.5823 21.2563 22.5823 20.8902 22.2162L14.9998 16.3258L9.10942 22.2162C8.7433 22.5823 8.14971 22.5823 7.7836 22.2162C7.41748 21.8501 7.41748 21.2565 7.7836 20.8904L13.674 15L7.7836 9.10961C7.41748 8.7435 7.41748 8.1499 7.7836 7.78379Z" fill="black"/>
@@ -119,7 +119,7 @@ function RouteComponent() {
                   font-semibold text-gray-800">
                     To. {selectedMsg.recipient}
                   </div>
-                  <div className="w-full flex p-[10px] justify-center items-center gap-[10px]
+                  <div className="w-full flex px-[50px] justify-center items-center gap-[10px]
                   text-gray-700 text-sm">
                     {selectedMsg.content}
                   </div>
@@ -130,7 +130,7 @@ function RouteComponent() {
                 </div>
                 <Link 
                   to="/postMsg"
-                  className="bg-pink-200 flex py-[10px] px-[30px] justify-center items-center gap-[10px] rounded-[10px]"
+                  className="bg-pink-200 flex py-[7px] px-[30px] justify-center items-center gap-[10px] rounded-[10px] pointer-events-auto"
                 >
                   <span>답장하기</span>
                 </Link>
