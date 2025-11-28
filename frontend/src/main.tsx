@@ -1,10 +1,10 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
+import './index.css'
 
 // routeTree 자동 생성 파일 import
-import { routeTree } from './routeTree.gen'
-import { AuthProvider } from './context/AuthContext'
+import { routeTree } from './routeTree.gen' 
 
 // 라우터 생성
 const router = createRouter({ routeTree })
@@ -22,9 +22,7 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
+      <RouterProvider router={router} />
     </StrictMode>
   )
 }
