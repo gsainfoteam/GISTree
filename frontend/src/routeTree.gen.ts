@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PostMsgRouteImport } from './routes/postMsg'
 import { Route as MsgBoxRouteImport } from './routes/msgBox'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as FindUserRouteImport } from './routes/findUser'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ const PostMsgRoute = PostMsgRouteImport.update({
 const MsgBoxRoute = MsgBoxRouteImport.update({
   id: '/msgBox',
   path: '/msgBox',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FindUserRoute = FindUserRouteImport.update({
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/findUser': typeof FindUserRoute
+  '/login': typeof LoginRoute
   '/msgBox': typeof MsgBoxRoute
   '/postMsg': typeof PostMsgRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/findUser': typeof FindUserRoute
+  '/login': typeof LoginRoute
   '/msgBox': typeof MsgBoxRoute
   '/postMsg': typeof PostMsgRoute
 }
@@ -60,21 +68,30 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/findUser': typeof FindUserRoute
+  '/login': typeof LoginRoute
   '/msgBox': typeof MsgBoxRoute
   '/postMsg': typeof PostMsgRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/findUser' | '/msgBox' | '/postMsg'
+  fullPaths: '/' | '/about' | '/findUser' | '/login' | '/msgBox' | '/postMsg'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/findUser' | '/msgBox' | '/postMsg'
-  id: '__root__' | '/' | '/about' | '/findUser' | '/msgBox' | '/postMsg'
+  to: '/' | '/about' | '/findUser' | '/login' | '/msgBox' | '/postMsg'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/findUser'
+    | '/login'
+    | '/msgBox'
+    | '/postMsg'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   FindUserRoute: typeof FindUserRoute
+  LoginRoute: typeof LoginRoute
   MsgBoxRoute: typeof MsgBoxRoute
   PostMsgRoute: typeof PostMsgRoute
 }
@@ -93,6 +110,13 @@ declare module '@tanstack/react-router' {
       path: '/msgBox'
       fullPath: '/msgBox'
       preLoaderRoute: typeof MsgBoxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/findUser': {
@@ -123,6 +147,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   FindUserRoute: FindUserRoute,
+  LoginRoute: LoginRoute,
   MsgBoxRoute: MsgBoxRoute,
   PostMsgRoute: PostMsgRoute,
 }
