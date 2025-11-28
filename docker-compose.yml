@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -8,41 +6,50 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: gistree
-      POSTGRES_PASSWORD: gistree_password
-      POSTGRES_DB: gistree_db
+      POSTGRES_USER: ${POSTGRES_USER:-gistree}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-gistree_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - gistree-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U gistree" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gistree}" ]
       interval: 10s
       timeout: 5s
       retries: 5
-  # backend:
-  #   build:
-  #     context: ./backend
-  #     dockerfile: Dockerfile
-  #   container_name: gistree-backend
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     # 환경 변수는 .env 파일이나 직접 지정
-  #     DATABASE_URL: postgresql://gistree:gistree_password@postgres:5432/gistree_db?schema=public
-  #     NODE_ENV: production
-  #     PORT: 3000
-  #     JWT_SECRET: ${JWT_SECRET}
-  #     IDP_ISSUER_URL: ${IDP_ISSUER_URL}
-  #     IDP_CLIENT_ID: ${IDP_CLIENT_ID}
-  #     IDP_CLIENT_SECRET: ${IDP_CLIENT_SECRET}
-  #     IDP_CALLBACK_URL: ${IDP_CALLBACK_URL}
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   networks:
-  #     - gistree-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gistree-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # [핵심 수정 사항]
+      # 1. 로컬 개발(.env)에선 localhost를 쓰지만, Docker 내부에선 서비스 이름인 'postgres'를 호스트로 써야 합니다.
+      # 2. 따라서 DATABASE_URL을 여기서 직접 조합해서 주입합니다.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-gistree}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-gistree_db}?schema=public
+
+      NODE_ENV: development
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: http://gsainfoteam-gistree-frontend.s3-website.eu-north-1.amazonaws.com
+      BACKEND_URL: ${BACKEND_URL}
+
+      IDP_URL: ${IDP_ISSUER_URL}
+      # IDP 관련 설정 (필요 시 .env에 값 추가)
+      IDP_ISSUER_URL: ${IDP_ISSUER_URL}
+      IDP_CLIENT_ID: ${IDP_CLIENT_ID}
+      IDP_CLIENT_SECRET: ${IDP_CLIENT_SECRET}
+      IDP_CALLBACK_URL: ${IDP_CALLBACK_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gistree-network
 
 volumes:
   postgres_data:

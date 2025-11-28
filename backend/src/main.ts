@@ -1,10 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { CsrfGuard } from './auth/csrf.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(cookieParser());
 
   // Global validation pipe
   app.useGlobalPipes(
@@ -15,9 +19,12 @@ async function bootstrap() {
     }),
   );
 
+  // Global CSRF Guard
+  app.useGlobalGuards(new CsrfGuard());
+
   // CORS 설정
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true,
   });
 
@@ -44,11 +51,11 @@ async function bootstrap() {
   });
 
   const port = process.env.PORT ?? 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`
-🎄 GIST 연말 쪽지 서비스 시작!
-🚀 서버 실행 중: http://localhost:${port}
-📚 API 문서: http://localhost:${port}/api
+🎄 GISTree 서비스 시작:)
+🚀 서버 실행 중: http://0.0.0.0:${port}
+📚 API 명세서: http://0.0.0.0:${port}/api
   `);
 }
 bootstrap();

@@ -1,17 +1,38 @@
 @import "tailwindcss";
 
-/* 눈 내리는 애니메이션 */
-@keyframes snowfall {
-  0% {
-    transform: translateY(0) translateX(0);
-    opacity: 0.7;
+@theme {
+  --font-sans: 'Outfit', sans-serif;
+  --animate-blob: blob 7s infinite;
+  --animate-bounce-slow: bounce-slow 3s infinite;
+
+  @keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
   }
-  50% {
-    transform: translateY(150px) translateX(10px);
-    opacity: 0.5;
+
+  @keyframes bounce-slow {
+    0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+    50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
   }
-  100% {
-    transform: translateY(300px) translateX(-5px);
-    opacity: 0;
+
+  /* fe 브랜치의 눈 내리는 효과 추가 */
+  @keyframes snowfall {
+    0% { transform: translateY(0) translateX(0); opacity: 0.7; }
+    50% { transform: translateY(150px) translateX(10px); opacity: 0.5; }
+    100% { transform: translateY(300px) translateX(-5px); opacity: 0; }
   }
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  min-height: 100vh;
+  color: #1e293b;
+}
+
+/* Snowfall effect (simple version from main - optional to keep) */
+.snow-bg {
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2393c5fd' fill-opacity='0.2' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
 }
