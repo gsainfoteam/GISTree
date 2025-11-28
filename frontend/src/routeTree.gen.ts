@@ -9,6 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PostMsgRouteImport } from './routes/postMsg'
+import { Route as MsgBoxRouteImport } from './routes/msgBox'
+import { Route as FindUserRouteImport } from './routes/findUser'
 import { Route as SendMessageRouteImport } from './routes/send-message'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AboutRouteImport } from './routes/about'
@@ -20,6 +23,19 @@ import { Route as TreeUserIdRouteImport } from './routes/tree/$userId'
 import { Route as AuthFailedRouteImport } from './routes/auth/failed'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 
+const PostMsgRoute = PostMsgRouteImport.update({
+  id: '/postMsg',
+  path: '/postMsg',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MsgBoxRoute = MsgBoxRouteImport.update({
+  id: '/msgBox',
+  path: '/msgBox',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FindUserRoute = FindUserRouteImport.update({
+  id: '/findUser',
+  path: '/findUser',
 const SendMessageRoute = SendMessageRouteImport.update({
   id: '/send-message',
   path: '/send-message',
@@ -74,6 +90,9 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/findUser': typeof FindUserRoute
+  '/msgBox': typeof MsgBoxRoute
+  '/postMsg': typeof PostMsgRoute
   '/login': typeof LoginRoute
   '/send-message': typeof SendMessageRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -86,6 +105,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/findUser': typeof FindUserRoute
+  '/msgBox': typeof MsgBoxRoute
+  '/postMsg': typeof PostMsgRoute
   '/login': typeof LoginRoute
   '/send-message': typeof SendMessageRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -99,6 +121,16 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/findUser': typeof FindUserRoute
+  '/msgBox': typeof MsgBoxRoute
+  '/postMsg': typeof PostMsgRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/about' | '/findUser' | '/msgBox' | '/postMsg'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/about' | '/findUser' | '/msgBox' | '/postMsg'
+  id: '__root__' | '/' | '/about' | '/findUser' | '/msgBox' | '/postMsg'
   '/login': typeof LoginRoute
   '/send-message': typeof SendMessageRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -150,6 +182,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  FindUserRoute: typeof FindUserRoute
+  MsgBoxRoute: typeof MsgBoxRoute
+  PostMsgRoute: typeof PostMsgRoute
   LoginRoute: typeof LoginRoute
   SendMessageRoute: typeof SendMessageRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -162,6 +197,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/postMsg': {
+      id: '/postMsg'
+      path: '/postMsg'
+      fullPath: '/postMsg'
+      preLoaderRoute: typeof PostMsgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/msgBox': {
+      id: '/msgBox'
+      path: '/msgBox'
+      fullPath: '/msgBox'
+      preLoaderRoute: typeof MsgBoxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/findUser': {
+      id: '/findUser'
+      path: '/findUser'
+      fullPath: '/findUser'
+      preLoaderRoute: typeof FindUserRouteImport
     '/send-message': {
       id: '/send-message'
       path: '/send-message'
@@ -238,6 +292,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  FindUserRoute: FindUserRoute,
+  MsgBoxRoute: MsgBoxRoute,
+  PostMsgRoute: PostMsgRoute,
   LoginRoute: LoginRoute,
   SendMessageRoute: SendMessageRoute,
   AuthCallbackRoute: AuthCallbackRoute,
