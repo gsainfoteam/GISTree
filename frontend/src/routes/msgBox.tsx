@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import MsgCard from '../components/MsgCard'
+import patternSvg from '../assets/pattern.svg'
 
 function RouteComponent() {
   // 모달 상태 관리
@@ -103,8 +104,16 @@ function RouteComponent() {
             
             {/* 모달 컨텐츠 */}
             <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-              <div className="flex flex-col w-[600px] h-[500px] py-[20px] px-[40px] justify-between items-center gap-[20px]
-              rounded-[20px] border-[10px] border-[#A12925]/20 bg-white">
+              <div 
+                className="inline-flex rounded-[20px] p-[8px] bg-cover bg-no-repeat bg-center pointer-events-auto"
+                style={{
+                  backgroundImage: patternSvg.startsWith('data:') 
+                    ? `url("${patternSvg}")` 
+                    : `url(${patternSvg})`,
+                }}
+              >
+                <div className="flex flex-col w-[600px] h-[500px] py-[20px] px-[40px] justify-between items-center gap-[20px]
+              rounded-[12px] bg-[#F9F5E9] shadow-md">
               
                 <div className="w-full h-auto flex justify-end p-[10px] items-center gap-[10px]">
                   <button onClick={() => setIsMsgOpen(false)}>
@@ -116,24 +125,25 @@ function RouteComponent() {
                 {/* 모달 내부 메시지 카드 */}
                 <div className="w-full flex-1 flex flex-col justify-between items-center">
                   <div className="w-full flex p-[10px] justify-start items-center gap-[10px]
-                  font-semibold text-gray-800">
+                  font-semibold text-lg text-gray-800">
                     To. {selectedMsg.recipient}
                   </div>
                   <div className="w-full flex px-[50px] justify-center items-center gap-[10px]
-                  text-gray-700 text-sm">
+                  text-gray-700 text-md font-medium">
                     {selectedMsg.content}
                   </div>
                   <div className="w-full flex p-[10px] justify-end items-center gap-[10px]
-                  font-semibold text-gray-800">
+                  font-semibold text-lg text-gray-800">
                     From. {selectedMsg.sender}
                   </div>
                 </div>
                 <Link 
                   to="/postMsg"
-                  className="bg-pink-200 flex py-[7px] px-[30px] justify-center items-center gap-[10px] rounded-[10px] pointer-events-auto"
+                  className="bg-[#B80002] text-white font-semibold text-lg flex py-[5px] px-[20px] justify-center items-center gap-[10px] rounded-[15px] pointer-events-auto"
                 >
                   <span>답장하기</span>
                 </Link>
+                </div>
               </div>
             </div>
           </>
