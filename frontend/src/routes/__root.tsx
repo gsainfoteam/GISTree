@@ -2,6 +2,7 @@
 import { createRootRoute, Outlet, useLocation } from '@tanstack/react-router'
 import Sidebar from '../components/Sidebar'
 import backgroundSvg from '../assets/background.svg'
+import WindowWithSnow from '../components/WindowWithSnow'
 
 export const Route = createRootRoute({
   component: () => {
@@ -24,6 +25,11 @@ export const Route = createRootRoute({
       >
         {/* 배경 레이어 */}
         <div className="absolute inset-0 -z-10" />
+
+        {/* 오른쪽 창문 + 눈 내리는 배경 - 창문 상단이 화면 상단으로부터 1/3 지점 */}
+        <div className="pointer-events-none absolute right-20 top-1/8 z-0">
+          <WindowWithSnow />
+        </div>
         
         {/* 콘텐츠 레이어 */}
         <div className="flex h-screen w-full relative z-10">

@@ -15,3 +15,12 @@
     opacity: 0;
   }
 }
+
+@layer utilities {
+  /* Tailwind에서 사용할 눈 내리기 애니메이션 유틸리티 */
+  .animate-snowfall {
+    animation-name: snowfall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+}
