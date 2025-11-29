@@ -6,15 +6,15 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-gistree}
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-gistree_db}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - gistree-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gistree}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,10 +28,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # [핵심 수정 사항]
       # 1. 로컬 개발(.env)에선 localhost를 쓰지만, Docker 내부에선 서비스 이름인 'postgres'를 호스트로 써야 합니다.
       # 2. 따라서 DATABASE_URL을 여기서 직접 조합해서 주입합니다.
-      DATABASE_URL: postgresql://${POSTGRES_USER:-gistree}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-gistree_db}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
 
       NODE_ENV: development
       PORT: 3000

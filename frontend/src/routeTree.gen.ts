@@ -9,25 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SendMessageRouteImport } from './routes/send-message'
 import { Route as PostMsgRouteImport } from './routes/postMsg'
 import { Route as MsgBoxRouteImport } from './routes/msgBox'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FindUserRouteImport } from './routes/findUser'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as WriteIndexRouteImport } from './routes/write/index'
-import { Route as ProfileIndexRouteImport } from './routes/profile/index'
-import { Route as InboxIndexRouteImport } from './routes/inbox/index'
-import { Route as TreeUserIdRouteImport } from './routes/tree/$userId'
-import { Route as AuthFailedRouteImport } from './routes/auth/failed'
-import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 
-const SendMessageRoute = SendMessageRouteImport.update({
-  id: '/send-message',
-  path: '/send-message',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PostMsgRoute = PostMsgRouteImport.update({
   id: '/postMsg',
   path: '/postMsg',
@@ -58,36 +46,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WriteIndexRoute = WriteIndexRouteImport.update({
-  id: '/write/',
-  path: '/write/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileIndexRoute = ProfileIndexRouteImport.update({
-  id: '/profile/',
-  path: '/profile/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InboxIndexRoute = InboxIndexRouteImport.update({
-  id: '/inbox/',
-  path: '/inbox/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TreeUserIdRoute = TreeUserIdRouteImport.update({
-  id: '/tree/$userId',
-  path: '/tree/$userId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthFailedRoute = AuthFailedRouteImport.update({
-  id: '/auth/failed',
-  path: '/auth/failed',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/auth/callback',
-  path: '/auth/callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,13 +54,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/msgBox': typeof MsgBoxRoute
   '/postMsg': typeof PostMsgRoute
-  '/send-message': typeof SendMessageRoute
-  '/auth/callback': typeof AuthCallbackRoute
-  '/auth/failed': typeof AuthFailedRoute
-  '/tree/$userId': typeof TreeUserIdRoute
-  '/inbox': typeof InboxIndexRoute
-  '/profile': typeof ProfileIndexRoute
-  '/write': typeof WriteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -111,13 +62,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/msgBox': typeof MsgBoxRoute
   '/postMsg': typeof PostMsgRoute
-  '/send-message': typeof SendMessageRoute
-  '/auth/callback': typeof AuthCallbackRoute
-  '/auth/failed': typeof AuthFailedRoute
-  '/tree/$userId': typeof TreeUserIdRoute
-  '/inbox': typeof InboxIndexRoute
-  '/profile': typeof ProfileIndexRoute
-  '/write': typeof WriteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,45 +71,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/msgBox': typeof MsgBoxRoute
   '/postMsg': typeof PostMsgRoute
-  '/send-message': typeof SendMessageRoute
-  '/auth/callback': typeof AuthCallbackRoute
-  '/auth/failed': typeof AuthFailedRoute
-  '/tree/$userId': typeof TreeUserIdRoute
-  '/inbox/': typeof InboxIndexRoute
-  '/profile/': typeof ProfileIndexRoute
-  '/write/': typeof WriteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/about'
-    | '/findUser'
-    | '/login'
-    | '/msgBox'
-    | '/postMsg'
-    | '/send-message'
-    | '/auth/callback'
-    | '/auth/failed'
-    | '/tree/$userId'
-    | '/inbox'
-    | '/profile'
-    | '/write'
+  fullPaths: '/' | '/about' | '/findUser' | '/login' | '/msgBox' | '/postMsg'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/about'
-    | '/findUser'
-    | '/login'
-    | '/msgBox'
-    | '/postMsg'
-    | '/send-message'
-    | '/auth/callback'
-    | '/auth/failed'
-    | '/tree/$userId'
-    | '/inbox'
-    | '/profile'
-    | '/write'
+  to: '/' | '/about' | '/findUser' | '/login' | '/msgBox' | '/postMsg'
   id:
     | '__root__'
     | '/'
@@ -174,13 +85,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/msgBox'
     | '/postMsg'
-    | '/send-message'
-    | '/auth/callback'
-    | '/auth/failed'
-    | '/tree/$userId'
-    | '/inbox/'
-    | '/profile/'
-    | '/write/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -190,24 +94,10 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MsgBoxRoute: typeof MsgBoxRoute
   PostMsgRoute: typeof PostMsgRoute
-  SendMessageRoute: typeof SendMessageRoute
-  AuthCallbackRoute: typeof AuthCallbackRoute
-  AuthFailedRoute: typeof AuthFailedRoute
-  TreeUserIdRoute: typeof TreeUserIdRoute
-  InboxIndexRoute: typeof InboxIndexRoute
-  ProfileIndexRoute: typeof ProfileIndexRoute
-  WriteIndexRoute: typeof WriteIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/send-message': {
-      id: '/send-message'
-      path: '/send-message'
-      fullPath: '/send-message'
-      preLoaderRoute: typeof SendMessageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/postMsg': {
       id: '/postMsg'
       path: '/postMsg'
@@ -250,48 +140,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/write/': {
-      id: '/write/'
-      path: '/write'
-      fullPath: '/write'
-      preLoaderRoute: typeof WriteIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile/': {
-      id: '/profile/'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inbox/': {
-      id: '/inbox/'
-      path: '/inbox'
-      fullPath: '/inbox'
-      preLoaderRoute: typeof InboxIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tree/$userId': {
-      id: '/tree/$userId'
-      path: '/tree/$userId'
-      fullPath: '/tree/$userId'
-      preLoaderRoute: typeof TreeUserIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/failed': {
-      id: '/auth/failed'
-      path: '/auth/failed'
-      fullPath: '/auth/failed'
-      preLoaderRoute: typeof AuthFailedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/auth/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -302,13 +150,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MsgBoxRoute: MsgBoxRoute,
   PostMsgRoute: PostMsgRoute,
-  SendMessageRoute: SendMessageRoute,
-  AuthCallbackRoute: AuthCallbackRoute,
-  AuthFailedRoute: AuthFailedRoute,
-  TreeUserIdRoute: TreeUserIdRoute,
-  InboxIndexRoute: InboxIndexRoute,
-  ProfileIndexRoute: ProfileIndexRoute,
-  WriteIndexRoute: WriteIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
