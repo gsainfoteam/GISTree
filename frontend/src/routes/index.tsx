@@ -1,14 +1,40 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import treePng from '../assets/pngTree.png'
+import ornament1Svg from '../assets/ornament1.svg'
+import ornament2Svg from '../assets/ornament2.svg'
+import ornament3Svg from '../assets/ornament3.svg'
+import { apiRequest, getAccessToken } from '../utils/api'
 
 // 장식품(ornament)의 타입을 정의합니다
 type Ornament = {
   id: string        // 장식품의 고유 식별자
   x: number         // 캔버스에서의 x 좌표
   y: number         // 캔버스에서의 y 좌표
-  color: string     // 장식품의 색상 (예: '#F87171')
   radius: number    // 장식품의 반지름 (원의 크기)
+  imageSrc: string  // 사용할 SVG 이미지 경로
+}
+
+// 백엔드에서 받아오는 트리 데이터 타입
+type TreeData = {
+  userId: string
+  decorations: {
+    [key: string]: {
+      ornamentId: string
+      position: { x: number; y: number; z?: number }
+      rotation?: number
+      scale?: number
+    }
+  }
+  isLocked: boolean
+}
+
+// 사용자 정보 타입 (트리 데이터는 별도로 가져옴)
+type UserInfo = {
+  id: string
+  name: string
+  email: string
+  studentId: string
 }
 
 // 캔버스의 크기를 700픽셀로 설정합니다
@@ -21,9 +47,6 @@ const TREE_CENTER_X = CANVAS_SIZE / 2
 const TREE_BOTTOM = CANVAS_SIZE - 60
 // 트리의 상단 y 좌표를 계산합니다 (패딩만큼 아래)
 const TREE_TOP = TREE_PADDING
-// 주석: 이전에는 SVG path data를 사용했지만, PNG 이미지를 사용하므로
-// 픽셀 데이터를 직접 읽는 방식으로 변경합니다.
-// path data는 더 이상 사용하지 않습니다.
 
 function HomeCanvas() {
   // useRef: 컴포넌트가 리렌더링되어도 값이 유지되는 참조를 만듭니다
@@ -43,11 +66,138 @@ function HomeCanvas() {
   // draggedIdRef: 현재 드래그 중인 장식품의 ID를 저장합니다
   const draggedIdRef = useRef<string | null>(null)
 
-  // useState: 장식품들의 상태를 관리합니다 (초기값으로 2개의 장식품을 설정)
-  const [ornaments, setOrnaments] = useState<Ornament[]>([
-    { id: 'ornament-1', x: TREE_CENTER_X - 40, y: TREE_TOP + 160, color: '#F87171', radius: 16 },
-    { id: 'ornament-2', x: TREE_CENTER_X + 50, y: TREE_TOP + 260, color: '#60A5FA', radius: 16 },
-  ])
+  // useState: 장식품들의 상태를 관리합니다
+  const [ornaments, setOrnaments] = useState<Ornament[]>([])
+  const [isLoading, setIsLoading] = useState(true)  // 로딩 중인지 표시
+  const [error, setError] = useState<string | null>(null)  // 에러 메시지
+  
+  // 오너먼트 SVG 이미지들을 미리 로드하여 저장
+  const ornamentImagesRef = useRef<{ [key: string]: HTMLImageElement }>({})
+
+  // drawTreeImage 함수 선언 (drawScene보다 먼저 정의)
+  const drawTreeImage = useCallback((context: CanvasRenderingContext2D) => {
+    const treeImage = treeImageRef.current
+    if (!treeImage) return // 이미지가 없으면 함수를 종료합니다
+    // 트리를 그릴 목표 높이를 계산합니다 (하단 - 상단)
+    const targetHeight = TREE_BOTTOM - (TREE_TOP - 20)
+    // 이미지를 목표 높이에 맞추기 위한 스케일 비율을 계산합니다
+    const scale = targetHeight / treeImage.height
+    // 스케일을 적용한 실제 그려질 너비를 계산합니다
+    const drawWidth = treeImage.width * scale
+    // 스케일을 적용한 실제 그려질 높이를 계산합니다
+    const drawHeight = treeImage.height * scale
+    // 이미지를 가로 중앙에 배치하기 위한 x 오프셋을 계산합니다
+    const offsetX = (CANVAS_SIZE - drawWidth) / 2
+    // 이미지를 세로 상단에 배치하기 위한 y 오프셋을 계산합니다
+    const offsetY = TREE_TOP - 20
+    // 트리의 변환 정보를 저장합니다 (나중에 좌표 변환에 사용)
+    // drawWidth와 drawHeight도 저장하여 픽셀 데이터 접근 시 사용합니다
+    treeTransformRef.current = { offsetX, offsetY, scale, drawWidth, drawHeight }
+    // drawImage: 이미지를 캔버스에 그립니다
+    // drawImage(image, x, y, width, height)
+    context.drawImage(treeImage, offsetX, offsetY, drawWidth, drawHeight)
+  }, [])
+
+  // drawOrnament 함수 선언 (SVG 이미지를 사용하여 그리기)
+  const drawOrnament = useCallback((context: CanvasRenderingContext2D, ornament: Ornament) => {
+    // 오너먼트 이미지 가져오기
+    const ornamentImage = ornamentImagesRef.current[ornament.imageSrc]
+    
+    // 이미지가 로드되지 않았으면 그리지 않음
+    if (!ornamentImage) return
+    
+    // 이미지 크기 계산 (radius를 기준으로 크기 결정)
+    const size = ornament.radius * 2
+    
+    // 이미지를 그릴 위치 계산 (중심점 기준)
+    const x = ornament.x - size / 2
+    const y = ornament.y - size / 2
+    
+    // SVG 이미지를 캔버스에 그리기
+    context.drawImage(ornamentImage, x, y, size, size)
+  }, [])
+
+  // drawScene함수 선언 (useCallback으로 메모이제이션)
+  const drawScene = useCallback(() => {
+    const canvas = canvasRef.current
+    const context = ctx.current
+    // 둘 중 하나라도 없으면 함수를 종료합니다
+    if (!canvas || !context) return
+    // 트리 이미지가 없으면 그리지 않음
+    if (!treeImageRef.current) return
+    // 캔버스를 지웁니다 (이전에 그려진 내용을 제거)
+    context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE) // clearRect: 지정된 영역을 투명하게 만듭니다
+    drawTreeImage(context) //트리 이미지 그리기 함수
+    //화살표함수. (매개변수) => {실행할 코드}
+    ornaments.forEach((ornament) => drawOrnament(context, ornament))
+  }, [ornaments, drawTreeImage, drawOrnament]) // ornaments와 함수들이 변경될 때마다 함수 재생성
+
+  // 트리 데이터를 API에서 가져오는 함수
+  useEffect(() => {
+    const loadTreeData = async () => {
+      try {
+        // 1. 토큰 확인
+        const token = getAccessToken()
+        if (!token) {
+          // 토큰이 없으면 로그인 페이지로 리다이렉트
+          window.location.href = '/login'
+          return
+        }
+
+        // 2. 먼저 사용자 정보 가져오기 (사용자 ID를 얻기 위해)
+        const userData = await apiRequest<UserInfo>('/users/me')
+        const userId = userData.id
+
+        // 3. 사용자 ID로 트리 데이터 가져오기
+        const treeData = await apiRequest<TreeData>(`/trees/${userId}`)
+
+        // 4. 백엔드의 decorations 형식을 프론트엔드의 ornaments 형식으로 변환
+        const decorations = treeData.decorations || {}
+        const ornamentSvgs = ['ornament1', 'ornament2', 'ornament3'] // 사용 가능한 SVG 목록
+        
+        // decorations가 비어있으면 빈 배열로 설정
+        if (Object.keys(decorations).length === 0) {
+          console.log('Decorations가 비어있음')
+          setOrnaments([])
+          setIsLoading(false)
+          return
+        }
+        
+        const convertedOrnaments: Ornament[] = Object.entries(decorations).map(([key, decoration]) => {
+          const radius = (decoration.scale || 1) * 16
+          
+          // 오너먼트 ID를 기반으로 어떤 SVG를 사용할지 결정
+          // ornamentId가 있으면 그것을 사용하고, 없으면 인덱스 기반으로 선택
+          const ornamentIndex = decoration.ornamentId 
+            ? parseInt(decoration.ornamentId) % ornamentSvgs.length
+            : parseInt(key) % ornamentSvgs.length
+          const imageSrc = ornamentSvgs[ornamentIndex]
+
+          return {
+            id: key,
+            x: decoration.position.x,
+            y: decoration.position.y,
+            radius: radius,
+            imageSrc: imageSrc,
+          }
+        })
+
+        console.log('변환된 오너먼트 개수:', convertedOrnaments.length)
+
+        // 5. 변환된 장식품 데이터 설정
+        setOrnaments(convertedOrnaments)
+        setIsLoading(false)
+      } catch (err) {
+        // 에러 발생 시 처리
+        console.error('트리 데이터 로드 실패:', err)
+        setError(err instanceof Error ? err.message : '트리 데이터를 불러오는데 실패했습니다.')
+        setIsLoading(false)
+      }
+    }
+
+    // 컴포넌트가 마운트될 때 트리 데이터 로드
+    loadTreeData()
+  }, [])
 
   // useEffect: 컴포넌트가 마운트될 때 한 번만 실행됩니다 (의존성 배열이 빈 배열)
   useEffect(() => {
@@ -101,50 +251,49 @@ function HomeCanvas() {
         // 이 데이터에는 각 픽셀의 RGBA 값이 포함되어 있습니다
         treeImageDataRef.current = tempCtx.getImageData(0, 0, img.width, img.height)
       }
-      drawScene() //그리기 함수. 아래서 정의함
+      drawScene() //그리기 함수 호출
     }
-  }, []) // 빈 배열: 컴포넌트 마운트 시 한 번만 실행
+  }, [drawScene]) // drawScene이 변경될 때마다 실행
+
+  // 오너먼트 SVG 이미지들을 로드하는 함수
+  useEffect(() => {
+    const ornamentSvgs = [
+      { src: ornament1Svg, key: 'ornament1' },
+      { src: ornament2Svg, key: 'ornament2' },
+      { src: ornament3Svg, key: 'ornament3' }
+    ]
+    let loadedCount = 0
+    
+    ornamentSvgs.forEach(({ src, key }) => {
+      const img = new Image()
+      img.onload = () => {
+        loadedCount++
+        ornamentImagesRef.current[key] = img
+        // 모든 이미지가 로드되고 트리 이미지도 로드되었으면 장면 다시 그리기
+        if (loadedCount === ornamentSvgs.length && treeImageRef.current) {
+          drawScene()
+        }
+      }
+      img.onerror = () => {
+        console.error(`오너먼트 ${key} 이미지 로드 실패`)
+        loadedCount++
+        // 에러가 나도 계속 진행
+        if (loadedCount === ornamentSvgs.length && treeImageRef.current) {
+          drawScene()
+        }
+      }
+      img.src = src
+    })
+  }, [drawScene]) // drawScene이 변경될 때마다 실행
 
   // ornaments 상태가 변경될 때마다 장면을 다시 그립니다
   useEffect(() => {
-    drawScene()
-  }, [ornaments]) // ornaments가 변경될 때마다 실행
+    // 트리 이미지가 로드된 후에만 그리기
+    if (treeImageRef.current) {
+      drawScene()
+    }
+  }, [ornaments, drawScene]) // ornaments와 drawScene이 변경될 때마다 실행
 
-  // drawScene함수 선언
-  const drawScene = () => {
-    const canvas = canvasRef.current
-    const context = ctx.current
-    // 둘 중 하나라도 없으면 함수를 종료합니다
-    if (!canvas || !context) return
-    // 캔버스를 지웁니다 (이전에 그려진 내용을 제거)
-    context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE) // clearRect: 지정된 영역을 투명하게 만듭니다
-    drawTreeImage(context) //트리 이미지 그리기 함수. 아래서 정의함
-    //화살표함수. (매개변수) => {실행할 코드}
-    ornaments.forEach((ornament) => drawOrnament(context, ornament))
-  }
-
-  const drawTreeImage = (context: CanvasRenderingContext2D) => {
-    const treeImage = treeImageRef.current
-    if (!treeImage) return // 이미지가 없으면 함수를 종료합니다
-    // 트리를 그릴 목표 높이를 계산합니다 (하단 - 상단)
-    const targetHeight = TREE_BOTTOM - (TREE_TOP - 20)
-    // 이미지를 목표 높이에 맞추기 위한 스케일 비율을 계산합니다
-    const scale = targetHeight / treeImage.height
-    // 스케일을 적용한 실제 그려질 너비를 계산합니다
-    const drawWidth = treeImage.width * scale
-    // 스케일을 적용한 실제 그려질 높이를 계산합니다
-    const drawHeight = treeImage.height * scale
-    // 이미지를 가로 중앙에 배치하기 위한 x 오프셋을 계산합니다
-    const offsetX = (CANVAS_SIZE - drawWidth) / 2
-    // 이미지를 세로 상단에 배치하기 위한 y 오프셋을 계산합니다
-    const offsetY = TREE_TOP - 20
-    // 트리의 변환 정보를 저장합니다 (나중에 좌표 변환에 사용)
-    // drawWidth와 drawHeight도 저장하여 픽셀 데이터 접근 시 사용합니다
-    treeTransformRef.current = { offsetX, offsetY, scale, drawWidth, drawHeight }
-    // drawImage: 이미지를 캔버스에 그립니다
-    // drawImage(image, x, y, width, height)
-    context.drawImage(treeImage, offsetX, offsetY, drawWidth, drawHeight)
-  }
 
   // 캔버스 좌표를 원본 이미지 좌표로 변환하는 함수입니다
   // (트리 이미지가 스케일되어 그려졌기 때문에 좌표 변환이 필요합니다)
@@ -249,28 +398,6 @@ function HomeCanvas() {
     return { x: fallback.x, y: fallback.y }
   }
 
-  // 장식품을 캔버스에 그리는 함수(drawOrnament)함수 선언. 여기 나중에 파일 불러와서 쓸거
-  const drawOrnament = (context: CanvasRenderingContext2D, ornament: Ornament) => {
-    // 새로운 경로를 시작합니다 (그리기 작업의 시작을 알립니다)
-    context.beginPath()
-    // arc(): 원을 그리는 함수
-    // arc(x, y, radius, startAngle, endAngle)
-    // x, y: 원의 중심 좌표
-    // radius: 반지름
-    // 0: 시작 각도 (0도 = 오른쪽)
-    // Math.PI * 2: 끝 각도 (360도 = 한 바퀴)
-    context.arc(ornament.x, ornament.y, ornament.radius, 0, Math.PI * 2)
-    // fillStyle: 채우기 색상을 설정합니다
-    context.fillStyle = ornament.color
-    // fill(): 경로를 색상으로 채웁니다 (원의 내부를 칠합니다)
-    context.fill()
-    // strokeStyle: 테두리 색상을 설정합니다 (반투명 흰색)
-    context.strokeStyle = 'rgba(255,255,255,0.25)'
-    // lineWidth: 테두리 두께를 설정합니다
-    context.lineWidth = 2
-    // stroke(): 경로의 테두리를 그립니다 (원의 둘레를 그립니다)
-    context.stroke()
-  }
 
   // 마우스 이벤트에서 캔버스 좌표를 계산하는 함수(canvasPointFromEvent)함수 선언
   // (브라우저 좌표를 캔버스 내부 좌표로 변환합니다)
@@ -356,7 +483,35 @@ function HomeCanvas() {
     draggedIdRef.current = null
   }
 
-  // 컴포넌트가 렌더링할 JSX를 반환합니다
+  // 로딩 중일 때 표시
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">트리 로딩 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // 에러가 발생했을 때 표시
+  if (error) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     // fixed: 화면에 고정된 위치에 배치합니다
     // inset-0: 화면 전체를 차지합니다 (top:0, right:0, bottom:0, left:0)

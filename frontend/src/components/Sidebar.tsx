@@ -1,9 +1,55 @@
 import { Link } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { apiRequest } from '../utils/api'
+
+// 사용자 정보 타입
+type UserInfo = {
+  name: string
+  studentId: string
+}
 
 export default function Sidebar() {
-  // 임시 사용자 데이터 (나중에 실제 데이터로 교체)
-  const userName = '채수연'
-  const userGrade = '25'
+  // 사용자 정보 상태 관리
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // 컴포넌트가 마운트될 때 사용자 정보 가져오기
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        const data = await apiRequest<{ name: string; studentId: string }>('/users/me')
+        setUserInfo(data)
+      } catch (error) {
+        console.error('사용자 정보 로드 실패:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadUserInfo()
+  }, [])
+
+  // 로딩 중일 때 표시
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-64 flex-col items-center justify-between gap-4 bg-transparent p-6">
+        <div className="flex w-full flex-col items-center gap-[30px]">
+          <div className="flex w-full justify-center items-center rounded-2xl bg-[#835353] px-4 py-2">
+            <div className="text-2xl font-bold">
+              <div className="text-[#B1ECA5]">
+                로딩 중...<span className="text-white">의 방</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const userName = userInfo?.name || '사용자'
+  // 학번에서 3번째와 4번째 숫자만 추출 (예: 20255212 → 25)
+  const fullStudentId = userInfo?.studentId || '00000000'
+  const userGrade = fullStudentId.length >= 4 ? fullStudentId.slice(2, 4) : fullStudentId
   
   return (
     <div className="flex h-screen w-64 flex-col items-center justify-between gap-4 bg-transparent p-6">

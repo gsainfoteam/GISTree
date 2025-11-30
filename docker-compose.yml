@@ -35,7 +35,8 @@ services:
       NODE_ENV: development
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET}
-      FRONTEND_URL: http://gsainfoteam-gistree-frontend.s3-website.eu-north-1.amazonaws.com
+      # FRONTEND_URL: http://gsainfoteam-gistree-frontend.s3-website.eu-north-1.amazonaws.com
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       BACKEND_URL: ${BACKEND_URL}
 
       IDP_URL: ${IDP_ISSUER_URL}
