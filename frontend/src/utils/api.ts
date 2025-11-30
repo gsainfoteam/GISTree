@@ -54,7 +54,7 @@ export const apiRequest = async <T>(
 ): Promise<T> => {
   // 1. API 기본 URL 가져오기
   const apiUrl = getApiUrl();
-  
+
   // 2. 저장된 토큰 가져오기
   const token = getAccessToken();
 
