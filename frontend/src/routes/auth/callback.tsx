@@ -43,14 +43,14 @@ function CallbackComponent() {
           console.log('User Info:', user)
 
           // 3. 이동할 경로 결정
-          // redirect_url이 있고 홈('/')이 아니라면 그곳으로 이동 (친구 트리 방문 등)
-          // 그 외의 경우(단순 로그인)에는 내 트리 페이지로 이동
+          // redirect_url이 있고 홈('/')이 아니라면 그곳으로 이동
+          // 그 외의 경우(단순 로그인)에는 홈('/')으로 이동 (index.tsx에서 내 트리 로드)
           if (redirect_url && redirect_url !== '/' && redirect_url !== '') {
             console.log('Redirecting to:', redirect_url)
             navigate({ to: decodeURIComponent(redirect_url) })
           } else {
-            console.log('Redirecting to user tree:', user.id)
-            navigate({ to: `/tree/${user.id}` })
+            console.log('Redirecting to home')
+            navigate({ to: '/' })
           }
           return
 
