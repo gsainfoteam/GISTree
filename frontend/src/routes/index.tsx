@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import treePng from '../assets/pngTree.png'
+import { apiRequest, getAccessToken } from '../utils/api'
 
 // 장식품(ornament)의 타입을 정의합니다
 type Ornament = {
@@ -9,6 +10,29 @@ type Ornament = {
   y: number         // 캔버스에서의 y 좌표
   color: string     // 장식품의 색상 (예: '#F87171')
   radius: number    // 장식품의 반지름 (원의 크기)
+}
+
+// 백엔드에서 받아오는 트리 데이터 타입
+type TreeData = {
+  userId: string
+  decorations: {
+    [key: string]: {
+      ornamentId: string
+      position: { x: number; y: number; z?: number }
+      rotation?: number
+      scale?: number
+    }
+  }
+  isLocked: boolean
+}
+
+// 사용자 정보 타입
+type UserData = {
+  id: string
+  name: string
+  email: string
+  studentId: string
+  tree: TreeData | null
 }
 
 // 캔버스의 크기를 700픽셀로 설정합니다
@@ -43,11 +67,64 @@ function HomeCanvas() {
   // draggedIdRef: 현재 드래그 중인 장식품의 ID를 저장합니다
   const draggedIdRef = useRef<string | null>(null)
 
-  // useState: 장식품들의 상태를 관리합니다 (초기값으로 2개의 장식품을 설정)
-  const [ornaments, setOrnaments] = useState<Ornament[]>([
-    { id: 'ornament-1', x: TREE_CENTER_X - 40, y: TREE_TOP + 160, color: '#F87171', radius: 16 },
-    { id: 'ornament-2', x: TREE_CENTER_X + 50, y: TREE_TOP + 260, color: '#60A5FA', radius: 16 },
-  ])
+  // useState: 장식품들의 상태를 관리합니다
+  const [ornaments, setOrnaments] = useState<Ornament[]>([])
+  const [isLoading, setIsLoading] = useState(true)  // 로딩 중인지 표시
+  const [error, setError] = useState<string | null>(null)  // 에러 메시지
+
+  // 트리 데이터를 API에서 가져오는 함수
+  useEffect(() => {
+    const loadTreeData = async () => {
+      try {
+        // 1. 토큰 확인
+        const token = getAccessToken()
+        if (!token) {
+          // 토큰이 없으면 로그인 페이지로 리다이렉트
+          window.location.href = '/login'
+          return
+        }
+
+        // 2. 사용자 정보 가져오기 (트리 정보도 포함됨)
+        const userData = await apiRequest<UserData>('/users/me')
+        
+        // 3. 트리가 없으면 빈 배열로 설정
+        if (!userData.tree) {
+          setOrnaments([])
+          setIsLoading(false)
+          return
+        }
+
+        // 4. 백엔드의 decorations 형식을 프론트엔드의 ornaments 형식으로 변환
+        const decorations = userData.tree.decorations || {}
+        const convertedOrnaments: Ornament[] = Object.entries(decorations).map(([key, decoration]) => {
+          // 기본 색상 배열 (나중에 오너먼트 정보를 가져와서 실제 색상/이미지를 사용할 수 있음)
+          const colors = ['#F87171', '#60A5FA', '#34D399', '#FBBF24', '#A78BFA', '#FB7185']
+          const colorIndex = parseInt(key) % colors.length
+          const radius = (decoration.scale || 1) * 16
+
+          return {
+            id: key,
+            x: decoration.position.x,
+            y: decoration.position.y,
+            color: colors[colorIndex],
+            radius: radius,
+          }
+        })
+
+        // 5. 변환된 장식품 데이터 설정
+        setOrnaments(convertedOrnaments)
+        setIsLoading(false)
+      } catch (err) {
+        // 에러 발생 시 처리
+        console.error('트리 데이터 로드 실패:', err)
+        setError(err instanceof Error ? err.message : '트리 데이터를 불러오는데 실패했습니다.')
+        setIsLoading(false)
+      }
+    }
+
+    // 컴포넌트가 마운트될 때 트리 데이터 로드
+    loadTreeData()
+  }, [])
 
   // useEffect: 컴포넌트가 마운트될 때 한 번만 실행됩니다 (의존성 배열이 빈 배열)
   useEffect(() => {
@@ -357,6 +434,36 @@ function HomeCanvas() {
   }
 
   // 컴포넌트가 렌더링할 JSX를 반환합니다
+  
+  // 로딩 중일 때 표시
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">트리 로딩 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // 에러가 발생했을 때 표시
+  if (error) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     // fixed: 화면에 고정된 위치에 배치합니다
     // inset-0: 화면 전체를 차지합니다 (top:0, right:0, bottom:0, left:0)

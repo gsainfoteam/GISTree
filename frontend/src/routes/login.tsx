@@ -1,21 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
 import logoSvg from '../assets/logo.svg'
-
+import { getApiUrl } from '../utils/api'
 
 export const Route = createFileRoute('/login')({
   component: RouteComponent,
 })
 
-export const getApiUrl = () => {
-  return import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:3000`;
-};
-
 function RouteComponent() {
   const handleLogin = () => {
     const apiUrl = getApiUrl();
-    const redirectUrl = encodeURIComponent(
-      `${window.location.pathname}${window.location.search}${window.location.hash}` || '/',
-    );
+    // 로그인 페이지에서는 항상 홈(/)으로 리다이렉트
+    // 다른 페이지에서 로그인이 필요할 때만 원래 경로로 돌아가도록 설정
+    const redirectUrl = encodeURIComponent('/');
     window.location.href = `${apiUrl}/auth/login?redirect_url=${redirectUrl}`;
   };
 
