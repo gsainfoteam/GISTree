@@ -46,6 +46,7 @@ export class AuthController {
     res.cookie('code_verifier', codeVerifier, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax', // Explicitly set SameSite
       maxAge: 10 * 60 * 1000, // 10 minutes
     });
 
@@ -109,8 +110,15 @@ export class AuthController {
     }
 
     const codeVerifier = req.cookies['code_verifier'];
+    console.log('Callback Debug:', {
+      receivedCookies: req.cookies,
+      codeVerifier,
+      frontendUrl,
+      backendUrl
+    });
+
     if (!codeVerifier) {
-      console.error('No code_verifier cookie found');
+      console.error('No code_verifier cookie found. Cookies:', req.cookies);
       return res.redirect(`${frontendUrl}/auth/failed?reason=session_expired`);
     }
 
