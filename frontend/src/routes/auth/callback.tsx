@@ -28,6 +28,7 @@ function CallbackComponent() {
 
   useEffect(() => {
     const handleLoginCallback = async () => {
+      console.log('Callback Search Params:', search) // 디버깅용 로그
       const { redirect_url, access_token } = search
 
       // 1. access_token이 있으면 localStorage에 저장
@@ -39,14 +40,16 @@ function CallbackComponent() {
           // 2. 토큰을 이용해 내 정보(ID)를 조회
           // 백엔드 엔드포인트: /users/me
           const user = await apiRequest<{ id: string }>('/users/me')
-          
+          console.log('User Info:', user)
+
           // 3. 이동할 경로 결정
           // redirect_url이 있고 홈('/')이 아니라면 그곳으로 이동 (친구 트리 방문 등)
           // 그 외의 경우(단순 로그인)에는 내 트리 페이지로 이동
           if (redirect_url && redirect_url !== '/' && redirect_url !== '') {
+            console.log('Redirecting to:', redirect_url)
             navigate({ to: decodeURIComponent(redirect_url) })
           } else {
-            // 주의: 라우트 구조에 따라 '/tree/$treeId' 등으로 수정이 필요할 수 있습니다.
+            console.log('Redirecting to user tree:', user.id)
             navigate({ to: `/tree/${user.id}` })
           }
           return
@@ -60,6 +63,7 @@ function CallbackComponent() {
       }
 
       // 토큰이 없는 경우 홈으로 이동
+      console.warn('No access token found, redirecting to home')
       navigate({ to: '/' })
     }
 
