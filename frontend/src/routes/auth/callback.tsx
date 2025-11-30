@@ -1,16 +1,14 @@
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { setAccessToken } from '../../utils/api'
+import { setAccessToken, apiRequest } from '../../utils/api'
 
 /**
  * /auth/callback 라우트
- * 
- * 이 페이지는 로그인 성공 후 백엔드에서 리다이렉트되는 페이지입니다.
- * 
- * 동작 과정:
+ * * 이 페이지는 로그인 성공 후 백엔드에서 리다이렉트되는 페이지입니다.
+ * * 동작 과정:
  * 1. 백엔드가 이 페이지로 리다이렉트하면서 URL에 access_token과 redirect_url을 포함시킵니다
  * 2. 이 페이지에서 access_token을 localStorage에 저장합니다
- * 3. redirect_url로 이동합니다 (없으면 홈으로)
+ * 3. 사용자 정보를 조회하여 본인의 트리 페이지(/tree/{id}) 또는 원래 가려던 페이지로 이동합니다.
  */
 export const Route = createFileRoute('/auth/callback')({
   component: CallbackComponent,
@@ -29,17 +27,43 @@ function CallbackComponent() {
   const search = useSearch({ from: '/auth/callback' })
 
   useEffect(() => {
-    const { redirect_url, access_token } = search
+    const handleLoginCallback = async () => {
+      const { redirect_url, access_token } = search
 
-    // 1. access_token이 있으면 localStorage에 저장
-    if (access_token) {
-      setAccessToken(access_token)
-      console.log('토큰이 저장되었습니다.')
+      // 1. access_token이 있으면 localStorage에 저장
+      if (access_token) {
+        setAccessToken(access_token)
+        console.log('토큰이 저장되었습니다.')
+
+        try {
+          // 2. 토큰을 이용해 내 정보(ID)를 조회
+          // 백엔드 엔드포인트: /users/me
+          const user = await apiRequest<{ id: string }>('/users/me')
+          
+          // 3. 이동할 경로 결정
+          // redirect_url이 있고 홈('/')이 아니라면 그곳으로 이동 (친구 트리 방문 등)
+          // 그 외의 경우(단순 로그인)에는 내 트리 페이지로 이동
+          if (redirect_url && redirect_url !== '/' && redirect_url !== '') {
+            navigate({ to: decodeURIComponent(redirect_url) })
+          } else {
+            // 주의: 라우트 구조에 따라 '/tree/$treeId' 등으로 수정이 필요할 수 있습니다.
+            navigate({ to: `/tree/${user.id}` })
+          }
+          return
+
+        } catch (error) {
+          console.error('사용자 정보 조회 실패:', error)
+          // 에러 발생 시 안전하게 홈으로 이동
+          navigate({ to: '/' })
+          return
+        }
+      }
+
+      // 토큰이 없는 경우 홈으로 이동
+      navigate({ to: '/' })
     }
 
-    // 2. redirect_url이 있으면 그 경로로 이동, 없으면 홈(/)으로 이동
-    const redirectPath = redirect_url ? decodeURIComponent(redirect_url) : '/'
-    navigate({ to: redirectPath })
+    handleLoginCallback()
   }, [search, navigate])
 
   // 로딩 중 표시 (이 페이지는 매우 빠르게 다른 페이지로 이동하므로 거의 보이지 않습니다)
